@@ -1,7 +1,7 @@
 // GET /api/leads?key=管理密碼  下載 email 名單（CSV，Excel 直接開）
 // 沒設定 ADMIN_KEY 或密碼錯誤一律回 404。
 
-const GAME = { catch: '招財貓接財氣', zodiac: '星座配對', guess: '猜猜我是誰', other: '其他' };
+const GAME = { catch: '招財貓接財氣', xmas: '聖誕胖胖貓送禮',zodiac: '星座配對', guess: '猜猜我是誰', other: '其他' };
 
 const fmt = new Intl.DateTimeFormat('zh-TW', {
   timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',

@@ -17,7 +17,7 @@
     --red:#B3302E;     /* 招福貓的紅 */
   }
   *{box-sizing:border-box;}
-  html,body{margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--ink); font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; letter-spacing:1px; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--ink); font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; letter-spacing:1px; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent;}
   button{font:inherit; letter-spacing:inherit;}
   #stage{position:fixed; inset:0;}
   #cv{display:block; width:100%; height:100%; touch-action:none; cursor:none;}
@@ -436,6 +436,11 @@
     if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.r=false;
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
+
+  /* 整頁鎖右鍵、長按選單、拖曳圖片；只有 email 欄位保留，方便貼上 */
+  document.addEventListener('contextmenu',function(e){ if(e.target.tagName!=='INPUT') e.preventDefault(); });
+  document.addEventListener('dragstart',function(e){ e.preventDefault(); });
+  document.addEventListener('selectstart',function(e){ if(e.target.tagName!=='INPUT') e.preventDefault(); });
 
   /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);

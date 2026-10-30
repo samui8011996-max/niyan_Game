@@ -3,7 +3,7 @@
 // 同一個 email 只存一筆，再送一次只會更新最高分。
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const GAMES = ['catch', 'zodiac', 'guess'];
+const GAMES = ['catch', 'xmas', 'zodiac', 'guess'];
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
