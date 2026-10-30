@@ -163,6 +163,7 @@
   var DURATION=60;                 /* 一局秒數 */
   var PTS_OK=100, PTS_NG=-50;      /* 送對／送錯 */
   var COOLDOWN=0.28;               /* 兩次丟禮物最短間隔（秒） */
+  var WARMUP=4;                    /* 開場前幾間房子都要綠禮物，讓人先熟悉 */
   /* 結算稱號：分數門檻由低到高 */
   var RANKS=[
     [0,   '見習小精靈', '禮物有點迷路，再練習一下就上手了！'],
@@ -186,7 +187,7 @@
   var WALLS=['#C8A27C','#B98F6A','#D6BC9A','#A97E5E','#C9B08E'];
 
   var cv=$('#cv'), ctx=cv.getContext('2d');
-  var W=0, H=0, U=0, ground=0, padH=0;
+  var W=0, H=0, U=0, ground=0, padH=0, small=false;
 
   /* ===== 素材 ===== */
   var catImg=new Image();
@@ -196,7 +197,7 @@
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
   var houses=[], gifts=[], parts=[], texts=[], snow=[];
-  var state='menu', score=0, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0;
+  var state='menu', score=0, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
   var best=store.get('niyan_xmas_best')||0;
 
   function resize(){
@@ -205,6 +206,7 @@
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     U=Math.min(W/9,H/13);
+    small=W<500;   /* 手機或窄的外嵌框：煙囪判定放寬、開場慢一點 */
     padH=$('.pad').offsetHeight;
     ground=H-padH-U*0.5;
     sleigh.x=W*0.3;
@@ -218,7 +220,7 @@
   function addHouse(x){
     var w=U*rnd(2.2,3.0), bodyH=U*rnd(1.5,2.6), roofH=U*rnd(0.8,1.1);
     var h={x:x, w:w, bodyH:bodyH, roofH:roofH, wall:WALLS[Math.floor(Math.random()*WALLS.length)],
-      want:Math.random()<0.5?'g':'r', done:null, t:Math.random()*6, cpos:rnd(0.62,0.74)};
+      want:built++<WARMUP?'g':Math.random()<0.5?'g':'r', done:null, t:Math.random()*6, cpos:rnd(0.62,0.74)};
     houses.push(h);
     return h;
   }
@@ -344,12 +346,13 @@
   }
 
   /* ===== 遊戲流程 ===== */
-  function speed(){ return U*lerp(3.6,6.8,Math.min(elapsed/DURATION,1)); }
+  function speed(){ return U*lerp(small?3.1:3.6,6.8,Math.min(elapsed/DURATION,1)); }
+  function buzz(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }   /* iPhone 不支援，會直接略過 */
 
   function start(){
     audio();
     score=0; elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
-    houses=[]; gifts=[]; parts=[]; texts=[];
+    houses=[]; gifts=[]; parts=[]; texts=[]; built=0;
     fillHouses();
     state='count'; countdown=2.1;
     $$('.ov').forEach(function(o){ o.classList.remove('on'); });
@@ -372,13 +375,13 @@
       score+=pts;
       burst(g.cx,g.top,['#F6D57A','#FFFDF8',COL[gift.c]],14);
       pop(g.cx,g.top-U*1.4,'+'+pts,'#F6D57A');
-      sfx('ok');
+      sfx('ok'); buzz(18);
     }else{
       h.done='ng'; ng++; combo=0;
       score=Math.max(0,score+PTS_NG);
       burst(g.cx,g.top,['#757575','#4A3F35'],10);
       pop(g.cx,g.top-U*1.4,'送錯了 '+PTS_NG,'#F2B8B0');
-      sfx('ng');
+      sfx('ng'); buzz([50,40,50]);
     }
   }
   function miss(gift,y){
@@ -444,7 +447,7 @@
       var bottom=gf.y+U*0.27, gone=false;
       for(var j=0;j<houses.length&&!gone;j++){
         var h=houses[j], g=geo(h);
-        if(!h.done && bottom>=g.top && gf.y<=g.top+U*0.4 && Math.abs(gf.x-g.cx)<=g.cw/2+U*0.12){ deliver(h,gf); gone=true; }
+        if(!h.done && bottom>=g.top && gf.y<=g.top+U*0.4 && Math.abs(gf.x-g.cx)<=g.cw/2+U*(small?0.24:0.12)){ deliver(h,gf); gone=true; }
         else if(gf.x>=h.x-U*0.1 && gf.x<=h.x+h.w+U*0.1 && bottom>=roofY(h,gf.x)){ miss(gf,bottom); gone=true; }
       }
       if(!gone && bottom>=ground){ miss(gf,ground); gone=true; }
