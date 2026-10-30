@@ -1,0 +1,4 @@
+# 本機測試用，不要上傳
+.dev.vars
+.wrangler/
+node_modules/
