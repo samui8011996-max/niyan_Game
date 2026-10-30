@@ -48,7 +48,7 @@
   /* 開始／結算畫面 */
   .ov{position:absolute; inset:0; z-index:5; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(40,48,56,.6);}
   .ov.on{display:flex; animation:fade .25s ease;}
-  .card{width:100%; max-width:360px; max-height:100%; overflow-y:auto; background:var(--paper); border-radius:24px; padding:22px 20px 20px; text-align:center; box-shadow:0 18px 40px rgba(0,0,0,.3);}
+  .card{width:100%; max-width:360px; max-height:100%; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#D9D3CA transparent; background:var(--paper); border-radius:24px; padding:22px 20px 20px; text-align:center; box-shadow:0 18px 40px rgba(0,0,0,.3);}
   .card .icon{display:block; width:110px; height:100px; margin:0 auto 2px; animation:bob 2.4s ease-in-out infinite;}
   .card h1{margin:4px 0 2px; font-size:23px; letter-spacing:3px;}
   .sub{margin:0 0 14px; font-size:14px; line-height:1.7; color:var(--grey);}
@@ -67,6 +67,31 @@
   .rank{display:inline-block; margin:2px 0 6px; padding:2px 14px; border-radius:999px; background:var(--green); color:#fff; font-size:13px; letter-spacing:2px;}
   .msg{margin:6px 0 4px; font-size:15px; line-height:1.7;}
   .best{margin:0 0 14px; font-size:13px; color:var(--grey);}
+  .best b{color:var(--red);}
+
+  /* 排行榜 */
+  .lb{margin:0 0 14px; padding:10px 12px 8px; border-radius:16px; background:#F6F1E8; text-align:left;}
+  .lb-h{display:flex; justify-content:space-between; align-items:baseline; margin:0 0 6px; font-size:14px; font-weight:700;}
+  .lb-h small{font-weight:400; font-size:12px; color:var(--grey);}
+  .lb ol{list-style:none; margin:0; padding:0; font-size:13px;}
+  .lb li{display:flex; align-items:center; gap:8px; padding:3px 6px; border-radius:8px;}
+  .lb li .n{flex:none; width:18px; text-align:center; font-weight:700; color:var(--grey);}
+  .lb li:nth-child(1) .n{color:#C9A15B;}
+  .lb li:nth-child(2) .n{color:#8E9AA2;}
+  .lb li:nth-child(3) .n{color:#B0805A;}
+  .lb li .k{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .lb li b{color:var(--red);}
+  .lb li.me{background:#fff; box-shadow:inset 0 0 0 1.5px var(--gold);}
+  .lb-me{margin:4px 0 0; font-size:12px; color:var(--brown); text-align:center;}
+  .lb-me:empty{display:none;}
+  .lb-form{display:flex; gap:6px; margin:8px 0 0;}
+  .lb-form[hidden]{display:none;}
+  .lb-form input{flex:1; min-width:0; padding:8px 10px; border-radius:10px; border:1.5px solid #E2DBCF; background:#fff; font:inherit; font-size:16px; color:var(--ink); outline:none; -webkit-user-select:text; user-select:text;}
+  .lb-form input:focus{border-color:var(--gold);}
+  .lb-form button{flex:none; border:0; border-radius:10px; background:var(--green); color:#fff; padding:0 14px; font-size:14px; cursor:pointer;}
+  .lb-form button:disabled{opacity:.6;}
+  .lb-err{margin:4px 0 0; font-size:12px; color:var(--red); text-align:center;}
+  .lb-err:empty{display:none;}
   .stat{display:flex; justify-content:center; gap:14px; margin:0 0 12px; font-size:13px; color:var(--grey);}
   .stat b{color:var(--ink);}
 
@@ -91,7 +116,7 @@
   .note a{color:var(--red); text-underline-offset:3px;}
 
   @media (max-height:640px){
-    .ov-end .icon{display:none;}
+    .card .icon{display:none;}
     .card{padding:18px 16px 16px;}
     .big{font-size:36px;}
   }
@@ -127,6 +152,12 @@
       </div>
       <button type="button" class="btn js-start" disabled>載入中…</button>
       <p class="how">手機：點下方綠色、紅色按鈕<br>送對 +100，連續送對分數加倍，送錯扣 50</p>
+      <p class="best s-best"></p>
+      <div class="lb lb-start">
+        <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
+        <ol class="lb-list"></ol>
+        <p class="lb-me"></p>
+      </div>
     </div>
   </div>
 
@@ -138,6 +169,13 @@
       <p class="msg e-msg"></p>
       <div class="stat"><span>送達 <b class="e-ok">0</b></span><span>送錯 <b class="e-ng">0</b></span><span>最高連擊 <b class="e-combo">0</b></span></div>
       <p class="best e-best"></p>
+      <div class="lb lb-end">
+        <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
+        <ol class="lb-list"></ol>
+        <p class="lb-me"></p>
+        <form class="lb-form" hidden><input name="nick" maxlength="10" placeholder="輸入暱稱上榜" autocomplete="nickname"><button type="submit">上榜</button></form>
+        <p class="lb-err"></p>
+      </div>
 
       <form class="claim c-form" novalidate>
         <p class="claim-t">留下 Email，領官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用</small></p>
@@ -241,7 +279,7 @@
   function fillHouses(){
     var last=houses[houses.length-1];
     var right=last?last.x+last.w:W*0.75;
-    while(right<W+U*4){ var h=addHouse(right+U*rnd(0.9,2.4)); right=h.x+h.w; }
+    while(right<W+U*4){ var h=addHouse(right+U*rnd(1.3,2.8)); right=h.x+h.w; }
   }
 
   /* ===== 畫圖 ===== */
@@ -349,7 +387,8 @@
   }
 
   /* ===== 遊戲流程 ===== */
-  function speed(){ return U*lerp(small?3.1:3.6,6.8,Math.min(elapsed/DURATION,1)); }
+  /* 前 20 秒等速，之後慢慢加快，最快是開場的 1.4 倍 */
+  function speed(){ return U*(small?2.8:3.2)*(1+0.4*clamp((elapsed/DURATION-0.33)/0.67,0,1)); }
   function buzz(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }   /* iPhone 不支援，會直接略過 */
 
   function start(){
@@ -403,7 +442,8 @@
     $('.e-rank').textContent=rk[1];
     $('.e-msg').textContent=rk[2];
     $('.e-ok').textContent=ok; $('.e-ng').textContent=ng; $('.e-combo').textContent=maxCombo;
-    $('.e-best').textContent=first&&score>0?'刷新你的最高紀錄！':'你的最高紀錄：'+best;
+    showBest($('.e-best'),first&&score>0);
+    endBoard();
     renderClaim();
     sfx('end');
     try{ window.parent.postMessage({type:'niyan-xmas:end', score:score},'*'); }catch(e){}
@@ -450,7 +490,7 @@
       var bottom=gf.y+U*0.27, gone=false;
       for(var j=0;j<houses.length&&!gone;j++){
         var h=houses[j], g=geo(h);
-        if(!h.done && bottom>=g.top && gf.y<=g.top+U*0.4 && Math.abs(gf.x-g.cx)<=g.cw/2+U*(small?0.24:0.12)){ deliver(h,gf); gone=true; }
+        if(!h.done && bottom>=g.top && gf.y<=g.top+U*0.4 && Math.abs(gf.x-g.cx)<=g.cw/2+U*(small?0.3:0.2)){ deliver(h,gf); gone=true; }
         else if(gf.x>=h.x-U*0.1 && gf.x<=h.x+h.w+U*0.1 && bottom>=roofY(h,gf.x)){ miss(gf,bottom); gone=true; }
       }
       if(!gone && bottom>=ground){ miss(gf,ground); gone=true; }
@@ -548,6 +588,76 @@
     if((e.key===' '||e.key==='Enter') && (state==='menu'&&catImg.complete || state==='over'&&$('.ov-end.on'))){ e.preventDefault(); start(); }
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
+
+  /* ===== 最高紀錄：這台裝置的（localStorage）＋大家的排行榜（/api/scores） ===== */
+  var pid=store.get('niyan_pid');
+  if(!pid){
+    pid=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)).toLowerCase();
+    store.set('niyan_pid',pid);
+  }
+  var nick=store.get('niyan_nick')||'';
+  var lbStart=$('.lb-start'), lbEnd=$('.lb-end'), lbForm=$('.lb-form'), lbErr=$('.lb-err');
+
+  function showBest(el,isNew){
+    if(!best){ el.textContent='還沒有紀錄，玩一局試試！'; return; }
+    el.innerHTML='';
+    el.appendChild(document.createTextNode(isNew?'刷新你的最高紀錄：':'你的最高紀錄：'));
+    var b=document.createElement('b'); b.textContent=best; el.appendChild(b);
+    el.appendChild(document.createTextNode(' 分'));
+  }
+  function renderBoard(el,d){
+    var ol=el.querySelector('.lb-list'), me=el.querySelector('.lb-me');
+    ol.innerHTML='';
+    if(!d){ me.textContent='排行榜暫時連不上'; return; }
+    var top=d.top.slice(0,5), inTop=false;
+    top.forEach(function(r,i){
+      var li=document.createElement('li'); if(r.me){ li.className='me'; inTop=true; }
+      var n=document.createElement('span'); n.className='n'; n.textContent=i+1;
+      var k=document.createElement('span'); k.className='k'; k.textContent=r.nick;
+      var s=document.createElement('b'); s.textContent=r.score;
+      li.appendChild(n); li.appendChild(k); li.appendChild(s); ol.appendChild(li);
+    });
+    if(!top.length) me.textContent='還沒有人上榜，快來搶第一名！';
+    else if(d.me) me.textContent=inTop?'你目前第 '+d.me.rank+' 名':'你目前第 '+d.me.rank+' 名（'+d.me.score+' 分）';
+    else me.textContent='';
+  }
+  function loadBoard(el){
+    el.querySelector('.lb-me').textContent='排行榜載入中…';
+    fetch('/api/scores?game=xmas&pid='+encodeURIComponent(pid))
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if(!d.ok) throw 0; renderBoard(el,d); })
+      .catch(function(){ renderBoard(el,null); });
+  }
+  function postScore(n){
+    return fetch('/api/scores',{method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({game:'xmas', pid:pid, nick:n, score:best})})
+      .then(function(r){ return r.json().then(function(d){ if(!r.ok||!d.ok) throw new Error(d.error||''); return d; }); });
+  }
+  /* 結算：有暱稱就自動更新最高分；還沒有暱稱就請他輸入 */
+  function endBoard(){
+    lbForm.hidden=true; lbErr.textContent='';
+    if(best>0&&nick){
+      lbEnd.querySelector('.lb-me').textContent='更新排行榜中…';
+      postScore(nick).then(function(d){ renderBoard(lbEnd,d); }).catch(function(){ loadBoard(lbEnd); });
+    }else{
+      loadBoard(lbEnd);
+      if(best>0){ lbForm.hidden=false; lbForm.nick.placeholder='輸入暱稱，用 '+best+' 分上榜'; }
+    }
+  }
+  lbForm.addEventListener('submit',function(e){
+    e.preventDefault();
+    var n=lbForm.nick.value.trim(), btn=lbForm.querySelector('button');
+    lbErr.textContent='';
+    if(!n){ lbErr.textContent='請輸入暱稱'; lbForm.nick.focus(); return; }
+    btn.disabled=true;
+    postScore(n).then(function(d){
+      nick=n; store.set('niyan_nick',n);
+      lbForm.hidden=true; renderBoard(lbEnd,d);
+    }).catch(function(x){ lbErr.textContent=x.message||'網路好像不太穩，請再試一次'; })
+      .then(function(){ btn.disabled=false; });
+  });
+  showBest($('.s-best'),false);
+  loadBoard(lbStart);
 
   /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);
