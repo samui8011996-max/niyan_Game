@@ -87,6 +87,8 @@
   .copy{border:0; background:var(--tea); color:#fff; border-radius:999px; padding:5px 14px; font-size:13px; cursor:pointer;}
   .got-how{margin:0 0 10px; font-size:12px; color:var(--grey);}
   .shop{display:inline-block; font-size:13px; color:var(--brown); text-underline-offset:4px;}
+  .note{display:block; margin:4px 0 8px; font-size:12px; font-weight:700; color:var(--red);}
+  .note a{color:var(--red); text-underline-offset:3px;}
 
   @media (max-height:640px){
     .ov-end .icon{display:none;}
@@ -138,7 +140,7 @@
       <p class="best e-best"></p>
 
       <form class="claim c-form" novalidate>
-        <p class="claim-t">留下 Email，領官網 <b>95 折</b>優惠碼</p>
+        <p class="claim-t">留下 Email，領官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用</small></p>
         <input type="email" name="email" placeholder="你的 Email" autocomplete="email" inputmode="email" required>
         <div class="hp" aria-hidden="true"><label>網站 <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <label class="agree"><input type="checkbox" name="consent">我同意泥研製所寄送優惠與新品消息到這個 Email，可隨時取消訂閱。</label>
@@ -149,6 +151,7 @@
         <p class="claim-t c-title">你的 95 折優惠碼</p>
         <div class="code"><b class="c-code"></b><button type="button" class="copy">複製</button></div>
         <p class="got-how c-how"></p>
+        <p class="note">還不是會員？<a class="join" target="_top">先加入會員</a></p>
         <a class="shop" target="_top">去官網選購</a>
       </div>
 
@@ -172,7 +175,7 @@
     [7000,'聖誕貓老公公','傳說中的送禮高手，就是你！']
   ];
   var SHOP='https://niyancement.shoplineapp.com/';
-  var HOW='到官網結帳時，在「優惠代碼」欄位輸入就能享 95 折。';
+  var HOW='請先加入官網會員並登入，結帳時在「優惠代碼」欄位輸入就能享 95 折。';
 
   var $=function(s){ return document.querySelector(s); };
   var $$=function(s){ return [].slice.call(document.querySelectorAll(s)); };
@@ -551,6 +554,7 @@
   var claimed=store.get('niyan_claim');
   var form=$('.c-form'), got=$('.c-got'), err=$('.c-form .err'), submit=$('.c-form .btn');
   $('.shop').href=SHOP;
+  $('.join').href=SHOP+'users/sign_up';
   $('.c-how').textContent=HOW;
   function renderClaim(again){
     form.hidden=!!claimed; got.hidden=!claimed;
