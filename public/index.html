@@ -214,14 +214,15 @@
   function lerp(a,b,t){ return a+(b-a)*t; }
   function rnd(a,b){ return a+Math.random()*(b-a); }
   var COL={g:'#4F7A5A', r:'#B3302E'};
-  var WALLS=['#C8A27C','#B98F6A','#D6BC9A','#A97E5E','#C9B08E'];
 
   var cv=$('#cv'), ctx=cv.getContext('2d');
   var W=0, H=0, U=0, ground=0, padH=0, small=false;
 
   /* ===== 素材 ===== */
   var sledImg=new Image();   /* 雪橇貓（含帽子、圍巾），車頭朝右 */
-  sledImg.onload=function(){ var b=$('.ov-start .js-start'); b.disabled=false; b.textContent='開始'; drawIcons(); };
+  var loading=2;   /* 雪橇和房子都載好才能開始 */
+  function loaded(){ if(--loading) return; var b=$('.ov-start .js-start'); b.disabled=false; b.textContent='開始'; drawIcons(); }
+  sledImg.onload=loaded;
   sledImg.src='assets/sleigh.svg';
 
   /* 送對了禮物打開會跳出招財貓：招福、金運兩款 × 六色（和選色測驗同一組顏色），隨機 */
@@ -246,6 +247,21 @@
     });
   };
   flakeSheet.src='assets/snowflakes.svg';
+  /* 房子圖：一張四棟。座標都是圖裡的單位：s=在整張圖的範圍，p=屋頂尖（雪的上緣），e=右邊屋簷，
+     win=窗戶（圖裡窗格是透空的，後面墊色就會亮燈），o=圓窗 [圓心x,圓心y,半徑] */
+  var HOUSE_TYPES=[{"s":[0,0,495,388],"p":[247,0],"e":[460,187],"win":[[126,245,54,61],[315,245,54,61]],"o":[]},{"s":[877,18,495,523],"p":[242,2],"e":[454,192],"win":[[121,247,54,61],[308,247,56,61],[121,374,54,61],[308,374,56,61]],"o":[]},{"s":[0,601,495,466],"p":[242,5],"e":[465,131],"win":[[121,212,54,56],[320,212,54,56],[121,341,54,55],[320,341,54,55]],"o":[[245,141,30]]},{"s":[798,710,495,350],"p":[232,0],"e":[444,167],"win":[[202,116,58,58],[108,212,52,56],[303,212,52,56]],"o":[]}];
+  var houseImgs=[];
+  var houseSheet=new Image();
+  houseSheet.onload=function(){
+    HOUSE_TYPES.forEach(function(t){
+      var k=1.6, hc=document.createElement('canvas');   /* 先畫成點陣，遊戲中每格不用重畫 SVG */
+      hc.width=Math.ceil(t.s[2]*k); hc.height=Math.ceil(t.s[3]*k);
+      hc.getContext('2d').drawImage(houseSheet,t.s[0],t.s[1],t.s[2],t.s[3],0,0,hc.width,hc.height);
+      houseImgs.push(hc);
+    });
+    loaded();
+  };
+  houseSheet.src='assets/houses.svg';
   var luckyImgs=[];
   ['fu','jin'].forEach(function(k){
     fetch('assets/lucky-'+k+'.svg').then(function(r){ return r.text(); }).then(function(svg){
@@ -286,27 +302,25 @@
 
   /* ===== 房子 ===== */
   function addHouse(x){
-    var w=U*rnd(2.2,3.0), bodyH=U*rnd(1.5,2.6), roofH=U*rnd(0.8,1.1);
-    var h={x:x, w:w, bodyH:bodyH, roofH:roofH, wall:WALLS[Math.floor(Math.random()*WALLS.length)],
-      want:built++<WARMUP?'g':Math.random()<0.5?'g':'r', done:null, t:Math.random()*6, cpos:rnd(0.62,0.74)};
+    var k=Math.floor(Math.random()*HOUSE_TYPES.length), t=HOUSE_TYPES[k];
+    var s=Math.min(U*rnd(3.0,3.5)/t.s[2], U*3.2/t.s[3]);   /* 太高的房子縮小一點，才不會撞到雪橇 */
+    var h={x:x, w:t.s[2]*s, s:s, k:k, want:built++<WARMUP?'g':Math.random()<0.5?'g':'r', done:null, t:Math.random()*6,
+      clx:t.p[0]+(t.e[0]-t.p[0])*rnd(0.42,0.62)};   /* 煙囪在右半邊屋頂上 */
     houses.push(h);
     return h;
   }
+  function houseTop(h){ return ground+U*0.12-HOUSE_TYPES[h.k].s[3]*h.s; }   /* 圖底的土堆稍微埋進雪地 */
+  function roofLocal(t,lx){ return t.p[1]+Math.abs(lx-t.p[0])*(t.e[1]-t.p[1])/(t.e[0]-t.p[0]); }
   function geo(h){
-    var bodyTop=ground-h.bodyH, peak=bodyTop-h.roofH;
-    var cx=h.x+h.w*h.cpos;
-    var roofAtC=bodyTop-h.roofH*(1-(cx-(h.x+h.w/2))/(h.w/2));
-    var cw=U*0.62, top=roofAtC-U*0.7;
-    return {bodyTop:bodyTop, peak:peak, cx:cx, cw:cw, top:top};
+    var t=HOUSE_TYPES[h.k], top0=houseTop(h);
+    var cx=h.x+h.clx*h.s, cw=U*0.62;
+    return {y0:top0, cx:cx, cw:cw, top:top0+roofLocal(t,h.clx)*h.s-U*0.75};
   }
-  function roofY(h,x){
-    var g=geo(h), mid=h.x+h.w/2;
-    return g.bodyTop-h.roofH*(1-Math.abs(x-mid)/(h.w/2));
-  }
+  function roofY(h,x){ return houseTop(h)+roofLocal(HOUSE_TYPES[h.k],(x-h.x)/h.s)*h.s; }
   function fillHouses(){
     var last=houses[houses.length-1];
     var right=last?last.x+last.w:W*0.75;
-    while(right<W+U*4){ var h=addHouse(right+U*rnd(1.3,2.8)); right=h.x+h.w; }
+    while(right<W+U*4){ var h=addHouse(right+U*rnd(0.5,1.8)); right=h.x+h.w; }
   }
 
   /* ===== 畫圖 ===== */
@@ -339,25 +353,20 @@
   }
   function drawHouse(c,h){
     var g=geo(h);
-    /* 煙囪（先畫，屋頂蓋住下半） */
-    c.fillStyle='#8B603A'; c.fillRect(g.cx-g.cw/2,g.top,g.cw,ground-g.top);
-    c.fillStyle='#6E4A2C'; c.fillRect(g.cx-g.cw/2-U*0.06,g.top,g.cw+U*0.12,U*0.16);
-    c.fillStyle='#FFFDF8'; c.fillRect(g.cx-g.cw/2-U*0.06,g.top-U*0.07,g.cw+U*0.12,U*0.09);
-    /* 牆 */
-    c.fillStyle=h.wall; c.fillRect(h.x,g.bodyTop,h.w,h.bodyH);
-    /* 屋頂 + 積雪 */
-    c.fillStyle='#6E4A2C';
-    c.beginPath(); c.moveTo(h.x-U*0.15,g.bodyTop+U*0.05); c.lineTo(h.x+h.w/2,g.peak); c.lineTo(h.x+h.w+U*0.15,g.bodyTop+U*0.05); c.closePath(); c.fill();
-    c.fillStyle='#FFFDF8';
-    c.beginPath(); c.moveTo(h.x-U*0.15,g.bodyTop+U*0.05); c.lineTo(h.x+h.w/2,g.peak-U*0.05); c.lineTo(h.x+h.w+U*0.15,g.bodyTop+U*0.05); c.lineTo(h.x+h.w+U*0.05,g.bodyTop-U*0.08); c.lineTo(h.x+h.w/2,g.peak+U*0.14); c.lineTo(h.x-U*0.05,g.bodyTop-U*0.08); c.closePath(); c.fill();
-    /* 窗戶：送對了會亮燈 */
-    var lit=h.done==='ok', ww=U*0.42, wy=g.bodyTop+h.bodyH*0.28;
-    [0.28,0.72].forEach(function(f){
-      c.fillStyle=lit?'#F6D57A':'#4A5A63'; c.fillRect(h.x+h.w*f-ww/2,wy,ww,ww);
-      c.fillStyle='rgba(255,255,255,.5)'; c.fillRect(h.x+h.w*f-U*0.02,wy,U*0.04,ww); c.fillRect(h.x+h.w*f-ww/2,wy+ww/2-U*0.02,ww,U*0.04);
-    });
-    /* 門 */
-    c.fillStyle='#6E4A2C'; c.fillRect(h.x+h.w*0.5-U*0.25,ground-U*0.8,U*0.5,U*0.8);
+    var t=HOUSE_TYPES[h.k], img=houseImgs[h.k];
+    /* 煙囪畫在房子後面：底邊順著屋頂斜度，只埋進積雪那一條，不會從屋頂木板縫透出來 */
+    var x1=g.cx-g.cw/2, x2=g.cx+g.cw/2, band=26*h.s;
+    c.fillStyle='#B57D46'; c.strokeStyle='#34414B'; c.lineWidth=Math.max(1.5,U*0.05); c.lineJoin='round';
+    c.beginPath(); c.moveTo(x1,g.top); c.lineTo(x2,g.top); c.lineTo(x2,roofY(h,x2)+band); c.lineTo(x1,roofY(h,x1)+band); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle='#963F2E'; c.fillRect(x1+g.cw*0.62,g.top,g.cw*0.2,roofY(h,x2)-g.top);
+    c.fillStyle='#826237'; c.fillRect(x1-U*0.06,g.top,g.cw+U*0.12,U*0.16); c.strokeRect(x1-U*0.06,g.top,g.cw+U*0.12,U*0.16);
+    c.fillStyle='#FFFDF8'; c.fillRect(x1-U*0.06,g.top-U*0.07,g.cw+U*0.12,U*0.09);
+    /* 窗戶：送對了會亮燈（墊在房子圖後面，從窗格透出來） */
+    var lit=h.done==='ok', in1=5;
+    c.fillStyle=lit?'#F6D57A':'#3A4752';
+    t.win.forEach(function(r){ c.fillRect(h.x+(r[0]+in1)*h.s,g.y0+(r[1]+in1)*h.s,(r[2]-in1*2)*h.s,(r[3]-in1*2)*h.s); });
+    t.o.forEach(function(o){ c.beginPath(); c.arc(h.x+o[0]*h.s,g.y0+o[1]*h.s,(o[2]-in1)*h.s,0,Math.PI*2); c.fill(); });
+    if(img) c.drawImage(img,h.x,g.y0,h.w,t.s[3]*h.s);
     /* 煙囪上方的需求泡泡 */
     if(!h.done) drawBubble(c,g.cx,g.top-U*0.85,U*0.42,h.want,h.t);
     else if(h.cat) drawLucky(c,h,g);
@@ -607,7 +616,7 @@
     if(e.target.tagName==='BUTTON' && (e.key===' '||e.key==='Enter')) return;   /* 讓按鈕自己處理 */
     if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'||e.key==='z'||e.key==='Z'){ e.preventDefault(); drop('g'); }
     if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'||e.key==='x'||e.key==='X'){ e.preventDefault(); drop('r'); }
-    if((e.key===' '||e.key==='Enter') && (state==='menu'&&sledImg.complete || state==='over'&&$('.ov-end.on'))){ e.preventDefault(); start(); }
+    if((e.key===' '||e.key==='Enter') && (state==='menu'&&!loading || state==='over'&&$('.ov-end.on'))){ e.preventDefault(); start(); }
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
 
