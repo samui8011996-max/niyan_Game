@@ -248,8 +248,8 @@
   };
   flakeSheet.src='assets/snowflakes.svg';
   /* 房子圖：一張四棟。座標都是圖裡的單位：s=在整張圖的範圍，p=屋頂尖（雪的上緣），e=右邊屋簷，
-     win=窗戶（圖裡窗格是透空的，後面墊色就會亮燈），o=圓窗 [圓心x,圓心y,半徑] */
-  var HOUSE_TYPES=[{"s":[0,0,495,388],"p":[247,0],"e":[460,187],"win":[[126,245,54,61],[315,245,54,61]],"o":[]},{"s":[877,18,495,523],"p":[242,2],"e":[454,192],"win":[[121,247,54,61],[308,247,56,61],[121,374,54,61],[308,374,56,61]],"o":[]},{"s":[0,601,495,466],"p":[242,5],"e":[465,131],"win":[[121,212,54,56],[320,212,54,56],[121,341,54,55],[320,341,54,55]],"o":[[245,141,30]]},{"s":[798,710,495,350],"p":[232,0],"e":[444,167],"win":[[202,116,58,58],[108,212,52,56],[303,212,52,56]],"o":[]}];
+     win=每一格窗格（圖裡是透空的，後面墊色就會亮燈；用像素量出來的） */
+  var HOUSE_TYPES=[{"s":[0,0,495,388],"p":[247,0],"e":[460,187],"win":[[125,246,23,27],[156,246,23,27],[314,246,23,27],[344,246,24,27],[156,280,23,27],[345,280,23,28],[125,281,24,26],[314,281,24,26]]},{"s":[877,18,495,523],"p":[242,2],"e":[454,192],"win":[[126,249,23,27],[156,249,24,27],[345,249,23,27],[315,250,23,26],[157,283,23,27],[345,283,24,27],[126,284,23,26],[314,284,24,26],[126,374,23,28],[345,374,23,27],[156,375,24,26],[315,375,23,26],[126,409,23,26],[157,409,23,27],[314,409,24,27],[345,409,24,27]]},{"s":[0,601,495,466],"p":[242,5],"e":[465,131],"win":[[226,100,26,26],[260,100,25,26],[226,135,26,25],[260,135,25,25],[131,212,23,24],[162,212,22,24],[329,212,22,24],[359,212,22,24],[131,244,23,24],[162,244,22,23],[329,244,22,24],[359,244,22,23],[131,341,23,23],[162,341,22,23],[329,341,22,23],[359,341,22,23],[162,372,22,24],[329,372,22,24],[131,373,23,23],[359,373,22,23]]},{"s":[798,710,495,350],"p":[232,0],"e":[444,167],"win":[[218,116,24,27],[251,116,24,27],[217,151,25,24],[251,151,25,24],[123,214,23,22],[153,214,23,22],[317,214,23,22],[347,214,23,22],[123,244,23,23],[153,244,23,23],[317,244,23,23],[347,244,23,23]]}];
   var houseImgs=[];
   var houseSheet=new Image();
   houseSheet.onload=function(){
@@ -285,7 +285,9 @@
     W=cv.clientWidth; H=cv.clientHeight;
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
+    var oldU=U;
     U=Math.min(W/9,H/(W>H*1.2?11:13));   /* 寬畫面時物件放大一點，不會顯得太小 */
+    if(oldU&&oldU!==U){ var f=U/oldU; houses.forEach(function(h){ h.x*=f; h.w*=f; h.s*=f; }); gifts.forEach(function(gf){ gf.x*=f; gf.y*=f; gf.vy*=f; }); }   /* 視窗大小變了，已經出現的房子跟著縮放 */
     small=W<500;   /* 手機或窄的外嵌框：煙囪判定放寬、開場慢一點 */
     padH=$('.pad').offsetHeight;
     ground=H-padH-U*0.5;
@@ -362,10 +364,9 @@
     c.fillStyle='#826237'; c.fillRect(x1-U*0.06,g.top,g.cw+U*0.12,U*0.16); c.strokeRect(x1-U*0.06,g.top,g.cw+U*0.12,U*0.16);
     c.fillStyle='#FFFDF8'; c.fillRect(x1-U*0.06,g.top-U*0.07,g.cw+U*0.12,U*0.09);
     /* 窗戶：送對了會亮燈（墊在房子圖後面，從窗格透出來） */
-    var lit=h.done==='ok', in1=5;
+    var lit=h.done==='ok';
     c.fillStyle=lit?'#F6D57A':'#3A4752';
-    t.win.forEach(function(r){ c.fillRect(h.x+(r[0]+in1)*h.s,g.y0+(r[1]+in1)*h.s,(r[2]-in1*2)*h.s,(r[3]-in1*2)*h.s); });
-    t.o.forEach(function(o){ c.beginPath(); c.arc(h.x+o[0]*h.s,g.y0+o[1]*h.s,(o[2]-in1)*h.s,0,Math.PI*2); c.fill(); });
+    t.win.forEach(function(r){ c.fillRect(h.x+(r[0]-1)*h.s,g.y0+(r[1]-1)*h.s,(r[2]+2)*h.s,(r[3]+2)*h.s); });
     if(img) c.drawImage(img,h.x,g.y0,h.w,t.s[3]*h.s);
     /* 煙囪上方的需求泡泡 */
     if(!h.done) drawBubble(c,g.cx,g.top-U*0.85,U*0.42,h.want,h.t);
@@ -487,7 +488,7 @@
 
   function update(dt){
     sleigh.t+=dt;
-    sleigh.y=Math.max(U*3.2,H*0.2)+Math.sin(sleigh.t*2)*U*0.15;
+    sleigh.y=Math.max(U*2.9,H*0.2)+Math.sin(sleigh.t*2)*U*0.15;
     snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; s.a+=s.va*dt; if(s.y>H+8){ s.y=-8; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
     parts.forEach(function(p){ p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=U*8*dt; });
     parts=parts.filter(function(p){ return p.life>0; });
@@ -558,7 +559,7 @@
       ctx.beginPath(); ctx.moveTo(sleigh.x,sleigh.y+U*0.9); ctx.lineTo(sleigh.x,ground); ctx.stroke(); ctx.setLineDash([]);
     }
     gifts.forEach(function(gf){ drawGift(ctx,gf.x,gf.y,U*0.55,COL[gf.c],gf.rot); });
-    drawSleigh(ctx,sleigh.x,sleigh.y,U*1.7,sleigh.t);
+    drawSleigh(ctx,sleigh.x,sleigh.y,U*2.1,sleigh.t);
 
     parts.forEach(function(p){ ctx.globalAlpha=Math.min(1,p.life*2); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2); ctx.fill(); });
     ctx.globalAlpha=1;
