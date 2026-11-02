@@ -48,6 +48,9 @@
   .pad button:active,.pad button.hit{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.25);}
   .pad .g{background:var(--green);}
   .pad .r{background:var(--red);}
+  .pad.gold button{background:linear-gradient(180deg,#F0D27A,#C9A24A 55%,#A9802E); color:#4A3F30; animation:goldglow .8s ease-in-out infinite alternate;}
+  .pad.gold canvas{visibility:hidden;}
+  @keyframes goldglow{from{box-shadow:0 4px 0 rgba(0,0,0,.25),0 0 0 rgba(246,213,122,0);}to{box-shadow:0 4px 0 rgba(0,0,0,.25),0 0 18px rgba(246,213,122,.9);}}
   .pad small{font-weight:400; font-size:11px; opacity:.8;}
   .pad canvas{width:26px; height:26px;}
 
@@ -198,6 +201,8 @@
   /* ===== 可調整的設定 ===== */
   var LIVES=3;                     /* 送錯或漏送一間扣一顆心，用完結束（沒有時間限制） */
   var PTS_OK=100;                  /* 送對一間 */
+  var PTS_GOLD=1000;               /* 元寶丟進煙囪「大發財」（也吃連擊倍數） */
+  var GOLD_EVERY=[12,22];          /* 貓咪隔幾秒會拿起元寶（隨機範圍） */
   var COOLDOWN=0.28;               /* 兩次丟禮物最短間隔（秒） */
   var WARMUP=4;                    /* 開場前幾間房子都要綠禮物，讓人先熟悉 */
   /* 結算稱號：分數門檻由低到高 */
@@ -289,6 +294,19 @@
   /* 聖誕樹：0=有星星和彩球洞（洞的位置 [x,y,半徑]，圖 266×360），1=素面 */
   var TREE_W=[266,326], TREE_H=360, TREE_BALLS=[[150,144,14],[104,192,14],[170,246,15],[94,272,14]], BALL_COLORS=['#B3302E','#E6B85C','#F2C9C4','#E6B85C'];
   var treeImgs=[0,1].map(function(i){ var im=new Image(); im.src='assets/tree'+i+'.webp'; return im; });
+  /* 元寶：貓咪拿的和丟出去的；money.svg 裡的小元寶、銅錢拿來噴 */
+  var ybImg=new Image(); ybImg.src='assets/yuanbao.webp';
+  var MONEY_SRC=[[196,186,192,136],[503,254,130,130]], moneyImgs=[];
+  var moneySheet=new Image();
+  moneySheet.onload=function(){
+    MONEY_SRC.forEach(function(r){
+      var k=48/Math.max(r[2],r[3]), mc=document.createElement('canvas');
+      mc.width=Math.ceil(r[2]*k); mc.height=Math.ceil(r[3]*k);
+      mc.getContext('2d').drawImage(moneySheet,r[0],r[1],r[2],r[3],0,0,mc.width,mc.height);
+      moneyImgs.push(mc);
+    });
+  };
+  moneySheet.src='assets/money.svg';
   var clock=0;
   var luckyImgs=[];
   ['fu','jin'].forEach(function(k){
@@ -305,7 +323,7 @@
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
   var houses=[], trees=[], gifts=[], parts=[], texts=[], snow=[];
-  var state='menu', score=0, lives=LIVES, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
+  var state='menu', score=0, lives=LIVES, holdGold=false, nextGold=0, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
   var best=store.get('niyan_xmas_best')||0;
 
   function resize(){
@@ -384,6 +402,13 @@
     var w=cw*1.9, h=w*534.48/886.1;
     c.save(); c.translate(x,y); c.rotate(Math.sin(t*2)*0.03);
     if(sledImg.complete) c.drawImage(sledImg,-w*0.48,cw*0.53-h,w,h);
+    if(c===ctx&&holdGold&&ybImg.complete){   /* 貓咪舉起元寶，一閃一閃 */
+      var yw=cw*0.62, yh=yw*125/200, px=-w*0.48+w*0.335, py=cw*0.53-h+h*0.1+Math.sin(clock*6)*cw*0.03;
+      var gl=c.createRadialGradient(px,py,0,px,py,yw*1.1);
+      gl.addColorStop(0,'rgba(255,230,150,'+(0.55+0.25*Math.sin(clock*8))+')'); gl.addColorStop(1,'rgba(255,230,150,0)');
+      c.fillStyle=gl; c.beginPath(); c.arc(px,py,yw*1.1,0,Math.PI*2); c.fill();
+      c.drawImage(ybImg,px-yw/2,py-yh/2,yw,yh);
+    }
     c.restore();
   }
   function drawBubble(c,x,y,r,want,t){
@@ -411,6 +436,12 @@
     t.win.forEach(function(r){ c.fillRect(h.x+(r[0]-1)*h.s,g.y0+(r[1]-1)*h.s,(r[2]+2)*h.s,(r[3]+2)*h.s); });
     if(img) c.drawImage(img,h.x,g.y0,h.w,t.s[3]*h.s);
     /* 煙囪上方的需求泡泡 */
+    if(h.gold!=null && h.gold<2.5){   /* 元寶進去的煙囪發金光 */
+      var ga=1-h.gold/2.5, gr=U*(1.4+0.25*Math.sin(h.gold*10));
+      var gg=c.createRadialGradient(g.cx,g.top,0,g.cx,g.top,gr);
+      gg.addColorStop(0,'rgba(255,236,160,'+(0.9*ga)+')'); gg.addColorStop(1,'rgba(255,236,160,0)');
+      c.fillStyle=gg; c.beginPath(); c.arc(g.cx,g.top,gr,0,Math.PI*2); c.fill();
+    }
     if(!h.done) drawBubble(c,g.cx,g.top-U*0.85,U*0.42,h.want,h.t);
     else if(h.cat) drawLucky(c,h,g);
     else{
@@ -464,7 +495,7 @@
 
   function start(){
     audio();
-    score=0; lives=LIVES; elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
+    score=0; lives=LIVES; holdGold=false; nextGold=rnd(GOLD_EVERY[0],GOLD_EVERY[1]); $('.pad').classList.remove('gold'); elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
     houses=[]; trees=[]; gifts=[]; parts=[]; texts=[]; built=0;
     fillHouses();
     state='count'; countdown=2.1;
@@ -475,13 +506,29 @@
   function drop(color){
     if(state!=='play'||cool>0) return;
     cool=COOLDOWN;
-    gifts.push({c:color, x:sleigh.x, y:sleigh.y+U*0.5, vy:U*2, rot:0, vr:rnd(-4,4)});
-    var b=$('.pad .'+color); b.classList.add('hit'); setTimeout(function(){ b.classList.remove('hit'); },90);
+    var b=$('.pad .'+color);
+    if(holdGold){ color='gold'; holdGold=false; $('.pad').classList.remove('gold'); nextGold=elapsed+rnd(GOLD_EVERY[0],GOLD_EVERY[1]); }   /* 拿著元寶時，按哪顆都是丟元寶 */
+    gifts.push({c:color, x:sleigh.x, y:sleigh.y+U*0.5, vy:U*2, rot:0, vr:rnd(-4,4)}); b.classList.add('hit'); setTimeout(function(){ b.classList.remove('hit'); },90);
     sfx('drop');
   }
 
   function deliver(h,gift){
     var g=geo(h);
+    if(gift.c==='gold'){   /* 元寶進煙囪：不管要什麼顏色都算，煙囪發光噴錢 */
+      h.done='ok'; h.gold=0; ok++; combo++; maxCombo=Math.max(maxCombo,combo);
+      var gm=combo>=10?3:combo>=5?2:1, gp=PTS_GOLD*gm;
+      score+=gp;
+      for(var i=0;i<22;i++){
+        var a=-Math.PI/2+rnd(-0.9,0.9), sp=U*rnd(4,8);
+        parts.push({x:g.cx, y:g.top, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:rnd(1.1,1.7), img:moneyImgs[i%3?1:0], s:U*rnd(0.3,0.45), rot:rnd(0,6), vr:rnd(-8,8)});
+      }
+      burst(g.cx,g.top,['#F6D57A','#FFF1C2','#E6B85C'],24);
+      texts.push({x:g.cx, y:g.top-U*1.6, txt:'大發財', c:'#F6D57A', life:1.6, big:true});
+      pop(g.cx,g.top-U*0.6,'+'+gp,'#F6D57A');
+      if(luckyImgs.length) h.cat={img:luckyImgs[Math.floor(Math.random()*luckyImgs.length)], t:0, dir:Math.random()<0.5?-1:1};
+      sfx('gold'); buzz([30,40,30,40,60]);
+      return;
+    }
     if(gift.c===h.want){
       h.done='ok'; ok++; combo++; maxCombo=Math.max(maxCombo,combo);
       var mult=combo>=10?3:combo>=5?2:1, pts=PTS_OK*mult;
@@ -505,13 +552,14 @@
   }
   function miss(gift,y){
     combo=0;
+    if(gift.c==='gold') pop(gift.x,y-U*0.8,'元寶掉了','#E0C38A');   /* 掉到地上就沒了，不扣心 */
     burst(gift.x,y,['#FFFDF8','#D9D3CA'],8);
     sfx('miss');
   }
 
   function end(){
     if(state==='over') return;
-    state='over';
+    state='over'; holdGold=false; $('.pad').classList.remove('gold');
     var first=score>best;
     if(first){ best=score; store.set('niyan_xmas_best',best); }
     var rk=RANKS[0]; RANKS.forEach(function(x){ if(score>=x[0]) rk=x; });
@@ -539,11 +587,11 @@
     sleigh.t+=dt;
     sleigh.y=(W>H*1.2?U*2.3:Math.max(U*2.9,H*0.2))+Math.sin(sleigh.t*2)*U*0.15;   /* 寬螢幕雪橇飛高一點 */
     snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; s.a+=s.va*dt; if(s.y>H+8){ s.y=-8; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
-    parts.forEach(function(p){ p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=U*8*dt; });
+    parts.forEach(function(p){ p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=U*8*dt; if(p.img) p.rot+=p.vr*dt; });
     parts=parts.filter(function(p){ return p.life>0; });
     texts.forEach(function(t){ t.life-=dt; t.y-=U*0.8*dt; });
     texts=texts.filter(function(t){ return t.life>0; });
-    houses.forEach(function(h){ h.t+=dt; if(h.cat) h.cat.t+=dt; });
+    houses.forEach(function(h){ h.t+=dt; if(h.cat) h.cat.t+=dt; if(h.gold!=null) h.gold+=dt; });
 
     if(state==='count'){
       var n=Math.ceil(countdown/0.7);
@@ -555,6 +603,10 @@
     if(state!=='play') return;
 
     elapsed+=dt; cool=Math.max(0,cool-dt);
+    if(!holdGold && elapsed>=nextGold && !gifts.some(function(gf){ return gf.c==='gold'; })){
+      holdGold=true; $('.pad').classList.add('gold');
+      pop(sleigh.x,sleigh.y+U*1.7,'拿到元寶！','#F6D57A'); sfx('go');
+    }
     var v=speed();
     worldX+=v*dt;
     houses.forEach(function(h){
@@ -635,16 +687,23 @@
       ctx.strokeStyle='rgba(255,253,248,.18)'; ctx.setLineDash([4,8]); ctx.lineWidth=2;
       ctx.beginPath(); ctx.moveTo(sleigh.x,sleigh.y+U*0.9); ctx.lineTo(sleigh.x,ground); ctx.stroke(); ctx.setLineDash([]);
     }
-    gifts.forEach(function(gf){ drawGift(ctx,gf.x,gf.y,U*0.55,COL[gf.c],gf.rot); });
+    gifts.forEach(function(gf){
+      if(gf.c==='gold'){ var yw=U*0.8, yh=yw*125/200; ctx.save(); ctx.translate(gf.x,gf.y); ctx.rotate(gf.rot*0.3); if(ybImg.complete) ctx.drawImage(ybImg,-yw/2,-yh/2,yw,yh); ctx.restore(); }
+      else drawGift(ctx,gf.x,gf.y,U*0.55,COL[gf.c],gf.rot);
+    });
     drawSleigh(ctx,sleigh.x,sleigh.y,U*2.1,sleigh.t);
 
-    parts.forEach(function(p){ ctx.globalAlpha=Math.min(1,p.life*2); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2); ctx.fill(); });
+    parts.forEach(function(p){
+      ctx.globalAlpha=Math.min(1,p.life*2);
+      if(p.img){ var k=p.s/Math.max(p.img.width,p.img.height); ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.drawImage(p.img,-p.img.width*k,-p.img.height*k,p.img.width*k*2,p.img.height*k*2); ctx.restore(); }
+      else{ ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2); ctx.fill(); }
+    });
     ctx.globalAlpha=1;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     texts.forEach(function(t){
       ctx.globalAlpha=Math.min(1,t.life*2);
-      ctx.font='700 '+Math.round(U*0.45)+'px "PingFang TC","Microsoft JhengHei",sans-serif';
-      ctx.lineWidth=4; ctx.strokeStyle='rgba(43,54,64,.8)'; ctx.strokeText(t.txt,t.x,t.y);
+      ctx.font='700 '+Math.round(U*(t.big?1.0:0.45))+'px "PingFang TC","Microsoft JhengHei",sans-serif';
+      ctx.lineWidth=t.big?7:4; ctx.strokeStyle='rgba(43,54,64,.8)'; ctx.strokeText(t.txt,t.x,t.y);
       ctx.fillStyle=t.c; ctx.fillText(t.txt,t.x,t.y);
     });
     ctx.globalAlpha=1;
@@ -796,6 +855,7 @@
   function sfx(k){
     if(k==='drop'){ tone(520,0.12,'sine',0.06,260); }
     else if(k==='ok'){ [1568,2093,2637].forEach(function(f,i){ tone(f,0.25,'sine',0.08,0,i*0.07); }); }
+    else if(k==='gold'){ [1047,1319,1568,2093,2637,3136].forEach(function(f,i){ tone(f,0.3,'sine',0.08,0,i*0.06); }); }
     else if(k==='ng'){ tone(220,0.25,'square',0.06,150); }
     else if(k==='miss'){ tone(300,0.1,'triangle',0.05,200); }
     else if(k==='tick'){ tone(660,0.08,'sine',0.1); }
