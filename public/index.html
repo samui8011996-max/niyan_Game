@@ -84,14 +84,8 @@
   .lb li.me{background:#fff; box-shadow:inset 0 0 0 1.5px var(--gold);}
   .lb-me{margin:4px 0 0; font-size:12px; color:var(--brown); text-align:center;}
   .lb-me:empty{display:none;}
-  .lb-form{display:flex; gap:6px; margin:8px 0 0;}
-  .lb-form[hidden]{display:none;}
-  .lb-form input{flex:1; min-width:0; padding:8px 10px; border-radius:10px; border:1.5px solid #E2DBCF; background:#fff; font:inherit; font-size:16px; color:var(--ink); outline:none; -webkit-user-select:text; user-select:text;}
-  .lb-form input:focus{border-color:var(--gold);}
-  .lb-form button{flex:none; border:0; border-radius:10px; background:var(--green); color:#fff; padding:0 14px; font-size:14px; cursor:pointer;}
-  .lb-form button:disabled{opacity:.6;}
-  .lb-err{margin:4px 0 0; font-size:12px; color:var(--red); text-align:center;}
-  .lb-err:empty{display:none;}
+  .go2{display:flex; gap:8px;}
+  .go2 .btn{flex:1; min-width:0; padding:10px 8px; font-size:14px; letter-spacing:1px; text-decoration:none; text-align:center;}
   .stat{display:flex; justify-content:center; gap:14px; margin:0 0 12px; font-size:13px; color:var(--grey);}
   .stat b{color:var(--ink);}
 
@@ -115,6 +109,14 @@
   .note{display:block; margin:4px 0 8px; font-size:12px; font-weight:700; color:var(--red);}
   .note a{color:var(--red); text-underline-offset:3px;}
 
+  /* 電腦寬畫面：卡片改左右兩欄、按鈕置中；手機維持直式 */
+  @media (min-width:720px) and (min-aspect-ratio:5/4){
+    .card{max-width:760px; display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center;}
+    .card .lb{margin-bottom:0;}
+    .ov-end .card{align-items:start;}
+    .pad{justify-content:center;}
+    .pad button{flex:0 1 260px;}
+  }
   @media (max-height:640px){
     .card .icon{display:none;}
     .card{padding:18px 16px 16px;}
@@ -142,6 +144,7 @@
 
   <div class="ov ov-start on">
     <div class="card">
+      <div class="col">
       <canvas class="icon" data-icon="sleigh" width="220" height="200"></canvas>
       <h1>聖誕胖胖貓送禮</h1>
       <p class="sub">60 秒內把禮物丟進煙囪<br>煙囪要<b>什麼顏色</b>，就丟什麼顏色</p>
@@ -153,16 +156,20 @@
       <button type="button" class="btn js-start" disabled>載入中…</button>
       <p class="how">手機：點下方綠色、紅色按鈕<br>送對 +100，連續送對分數加倍，送錯扣 50</p>
       <p class="best s-best"></p>
+      </div>
+      <div class="col">
       <div class="lb lb-start">
         <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
         <ol class="lb-list"></ol>
         <p class="lb-me"></p>
+      </div>
       </div>
     </div>
   </div>
 
   <div class="ov ov-end">
     <div class="card">
+      <div class="col">
       <canvas class="icon" data-icon="sleigh" width="220" height="200"></canvas>
       <div class="rank e-rank"></div>
       <div class="big"><small>分數</small><span class="e-score">0</span></div>
@@ -173,27 +180,27 @@
         <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
         <ol class="lb-list"></ol>
         <p class="lb-me"></p>
-        <form class="lb-form" hidden><input name="nick" maxlength="10" placeholder="輸入暱稱上榜" autocomplete="nickname"><button type="submit">上榜</button></form>
-        <p class="lb-err"></p>
       </div>
 
+      </div>
+      <div class="col">
       <form class="claim c-form" novalidate>
-        <p class="claim-t">留下 Email，領官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用</small></p>
+        <p class="claim-t">留下 Email 登錄排行榜<br>再送官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用，還不是會員？<a class="join" target="_top">加入會員</a></small></p>
         <input type="email" name="email" placeholder="你的 Email" autocomplete="email" inputmode="email" required>
         <div class="hp" aria-hidden="true"><label>網站 <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <label class="agree"><input type="checkbox" name="consent">我同意泥研製所寄送優惠與新品消息到這個 Email，可隨時取消訂閱。</label>
         <p class="err" role="alert"></p>
-        <button type="submit" class="btn">領取優惠碼</button>
+        <button type="submit" class="btn">登錄分數並領取優惠碼</button>
       </form>
       <div class="claim c-got" hidden>
         <p class="claim-t c-title">你的 95 折優惠碼</p>
         <div class="code"><b class="c-code"></b><button type="button" class="copy">複製</button></div>
         <p class="got-how c-how"></p>
-        <p class="note">還不是會員？<a class="join" target="_top">先加入會員</a></p>
-        <a class="shop" target="_top">去官網選購</a>
+        <div class="go2"><a class="btn join" target="_top">加入會員</a><a class="btn line shop" target="_top">去官網選購</a></div>
       </div>
 
       <button type="button" class="btn line js-start">再玩一次</button>
+      </div>
     </div>
   </div>
 </div>
@@ -212,7 +219,8 @@
     [4000,'金牌麋鹿',   '又快又準，整條街都在謝謝你！'],
     [7000,'聖誕貓老公公','傳說中的送禮高手，就是你！']
   ];
-  var SHOP='https://niyancement.shoplineapp.com/';
+  var SHOP='https://www.niyan-cement.com/';
+  var JOIN=SHOP+'users/sign_in';   /* 加入會員／登入 */
   var HOW='請先加入官網會員並登入，結帳時在「優惠代碼」欄位輸入就能享 95 折。';
 
   var $=function(s){ return document.querySelector(s); };
@@ -246,7 +254,7 @@
     W=cv.clientWidth; H=cv.clientHeight;
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    U=Math.min(W/9,H/13);
+    U=Math.min(W/9,H/(W>H*1.2?11:13));   /* 寬畫面時物件放大一點，不會顯得太小 */
     small=W<500;   /* 手機或窄的外嵌框：煙囪判定放寬、開場慢一點 */
     padH=$('.pad').offsetHeight;
     ground=H-padH-U*0.5;
@@ -589,14 +597,10 @@
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
 
-  /* ===== 最高紀錄：這台裝置的（localStorage）＋大家的排行榜（/api/scores） ===== */
-  var pid=store.get('niyan_pid');
-  if(!pid){
-    pid=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12)).toLowerCase();
-    store.set('niyan_pid',pid);
-  }
-  var nick=store.get('niyan_nick')||'';
-  var lbStart=$('.lb-start'), lbEnd=$('.lb-end'), lbForm=$('.lb-form'), lbErr=$('.lb-err');
+  /* ===== 最高紀錄：這台裝置的（localStorage）＋大家的排行榜（/api/scores，用 email 登錄） ===== */
+  var lbStart=$('.lb-start'), lbEnd=$('.lb-end');
+  var claimed=store.get('niyan_claim');            /* {code, email}；舊版只有 code */
+  var myEmail=claimed&&claimed.email||'';
 
   function showBest(el,isNew){
     if(!best){ el.textContent='還沒有紀錄，玩一局試試！'; return; }
@@ -605,7 +609,7 @@
     var b=document.createElement('b'); b.textContent=best; el.appendChild(b);
     el.appendChild(document.createTextNode(' 分'));
   }
-  function renderBoard(el,d){
+  function renderBoard(el,d,hint){
     var ol=el.querySelector('.lb-list'), me=el.querySelector('.lb-me');
     ol.innerHTML='';
     if(!d){ me.textContent='排行榜暫時連不上'; return; }
@@ -617,80 +621,61 @@
       var s=document.createElement('b'); s.textContent=r.score;
       li.appendChild(n); li.appendChild(k); li.appendChild(s); ol.appendChild(li);
     });
-    if(!top.length) me.textContent='還沒有人上榜，快來搶第一名！';
-    else if(d.me) me.textContent=inTop?'你目前第 '+d.me.rank+' 名':'你目前第 '+d.me.rank+' 名（'+d.me.score+' 分）';
-    else me.textContent='';
+    if(d.me) me.textContent=inTop?'你目前第 '+d.me.rank+' 名':'你目前第 '+d.me.rank+' 名（'+d.me.score+' 分）';
+    else if(hint) me.textContent=hint;
+    else me.textContent=top.length?'':'還沒有人上榜，快來搶第一名！';
   }
-  function loadBoard(el){
-    el.querySelector('.lb-me').textContent='排行榜載入中…';
-    fetch('/api/scores?game=xmas&pid='+encodeURIComponent(pid))
-      .then(function(r){ return r.json(); })
-      .then(function(d){ if(!d.ok) throw 0; renderBoard(el,d); })
-      .catch(function(){ renderBoard(el,null); });
-  }
-  function postScore(n){
-    return fetch('/api/scores',{method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({game:'xmas', pid:pid, nick:n, score:best})})
+  function api(url,body){
+    return fetch(url,body?{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}:undefined)
       .then(function(r){ return r.json().then(function(d){ if(!r.ok||!d.ok) throw new Error(d.error||''); return d; }); });
   }
-  /* 結算：有暱稱就自動更新最高分；還沒有暱稱就請他輸入 */
-  function endBoard(){
-    lbForm.hidden=true; lbErr.textContent='';
-    if(best>0&&nick){
-      lbEnd.querySelector('.lb-me').textContent='更新排行榜中…';
-      postScore(nick).then(function(d){ renderBoard(lbEnd,d); }).catch(function(){ loadBoard(lbEnd); });
-    }else{
-      loadBoard(lbEnd);
-      if(best>0){ lbForm.hidden=false; lbForm.nick.placeholder='輸入暱稱，用 '+best+' 分上榜'; }
-    }
+  function loadBoard(el,hint){
+    el.querySelector('.lb-me').textContent='排行榜載入中…';
+    api('/api/scores?game=xmas'+(myEmail?'&email='+encodeURIComponent(myEmail):''))
+      .then(function(d){ renderBoard(el,d,hint); })
+      .catch(function(){ renderBoard(el,null); });
   }
-  lbForm.addEventListener('submit',function(e){
-    e.preventDefault();
-    var n=lbForm.nick.value.trim(), btn=lbForm.querySelector('button');
-    lbErr.textContent='';
-    if(!n){ lbErr.textContent='請輸入暱稱'; lbForm.nick.focus(); return; }
-    btn.disabled=true;
-    postScore(n).then(function(d){
-      nick=n; store.set('niyan_nick',n);
-      lbForm.hidden=true; renderBoard(lbEnd,d);
-    }).catch(function(x){ lbErr.textContent=x.message||'網路好像不太穩，請再試一次'; })
-      .then(function(){ btn.disabled=false; });
-  });
+  /* 結算：留過 email 就自動更新最高分；還沒留就提示下面填 email 登錄 */
+  function endBoard(){
+    if(myEmail&&best>0){
+      lbEnd.querySelector('.lb-me').textContent='更新排行榜中…';
+      api('/api/scores',{game:'xmas', email:myEmail, score:best})
+        .then(function(d){ renderBoard(lbEnd,d); })
+        .catch(function(){ loadBoard(lbEnd); });
+    }else loadBoard(lbEnd,best>0?'在下面留下 Email，就能用 '+best+' 分登上排行榜':'');
+  }
   showBest($('.s-best'),false);
   loadBoard(lbStart);
 
-  /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼 ===== */
+  /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼，同時登錄分數 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);
-  var claimed=store.get('niyan_claim');
   var form=$('.c-form'), got=$('.c-got'), err=$('.c-form .err'), submit=$('.c-form .btn');
   $('.shop').href=SHOP;
-  $('.join').href=SHOP+'users/sign_up';
+  $$('.join').forEach(function(a){ a.href=JOIN; });
   $('.c-how').textContent=HOW;
   function renderClaim(again){
-    form.hidden=!!claimed; got.hidden=!claimed;
-    if(!claimed) return;
+    var done=!!myEmail;
+    form.hidden=done; got.hidden=!done;
+    if(!done) return;
     $('.c-title').textContent=again?'這個 Email 已經領過囉，優惠碼在這裡':'你的 95 折優惠碼';
     $('.c-code').textContent=claimed.code;
     $('.copy').textContent='複製';
   }
   form.addEventListener('submit',function(e){
     e.preventDefault();
-    var email=form.email.value.trim();
+    var email=form.email.value.trim().toLowerCase();
     err.textContent='';
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.textContent='請輸入正確的 Email'; form.email.focus(); return; }
     if(!form.consent.checked){ err.textContent='請勾選同意，才能寄送優惠給你'; return; }
     submit.disabled=true; submit.textContent='處理中…';
-    fetch('/api/claim',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:email, consent:true, game:'xmas', score:best, src:SRC, website:form.website.value})
-    }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
-      .then(function(res){
-        if(!res.ok||!res.d.ok) throw new Error(res.d.error||'');
-        claimed={code:res.d.code}; store.set('niyan_claim',claimed);
-        renderClaim(!res.d.isNew);
+    api('/api/claim',{email:email, consent:true, game:'xmas', score:best, src:SRC, website:form.website.value})
+      .then(function(d){
+        claimed={code:d.code, email:email}; myEmail=email; store.set('niyan_claim',claimed);
+        renderClaim(!d.isNew);
+        if(d.board) renderBoard(lbEnd,d.board);
       })
       .catch(function(x){ err.textContent=x.message||'網路好像不太穩，請再試一次'; })
-      .then(function(){ submit.disabled=false; submit.textContent='領取優惠碼'; });
+      .then(function(){ submit.disabled=false; submit.textContent='登錄分數並領取優惠碼'; });
   });
   $('.copy').onclick=function(){
     var b=this, code=$('.c-code').textContent;

@@ -1,8 +1,10 @@
 // POST /api/claim  { email, consent, game, score, src, website }
 // 存 email 到 D1，回傳優惠碼。優惠碼放在環境變數 COUPON_CODE，不寫在網頁原始碼裡。
 // 同一個 email 只存一筆，再送一次只會更新最高分。
+// 有排行榜的遊戲會順便把分數登錄上榜，回傳最新排行榜。
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+import { MAX, EMAIL_RE, saveScore, board } from '../../lib/scores.js';
+
 const GAMES = ['catch', 'xmas', 'zodiac', 'guess'];
 
 const json = (data, status = 200) =>
@@ -40,5 +42,11 @@ export async function onRequestPost({ request, env }) {
     .bind(email, game, score, src, now)
     .first();
 
-  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew: row.created_at === now });
+  let lb = null;
+  if (MAX[game]) {
+    if (score > 0 && score <= MAX[game]) await saveScore(env.DB, game, email, score);
+    lb = await board(env.DB, game, email);
+  }
+
+  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew: row.created_at === now, board: lb });
 }

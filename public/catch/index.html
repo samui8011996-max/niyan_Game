@@ -162,7 +162,7 @@
     [1000,'招財達人', '財氣滿滿，胖胖貓都替你開心！'],
     [2000,'招財大師', '財神爺都要來拜訪你了！']
   ];
-  var SHOP='https://niyancement.shoplineapp.com/';
+  var SHOP='https://www.niyan-cement.com/';
   var HOW='請先加入官網會員並登入，結帳時在「優惠代碼」欄位輸入就能享 95 折。';
 
   var $=function(s){ return document.querySelector(s); };
@@ -450,7 +450,7 @@
   var claimed=store.get('niyan_claim');
   var form=$('.c-form'), got=$('.c-got'), err=$('.c-form .err'), submit=$('.c-form .btn');
   $('.shop').href=SHOP;
-  $('.join').href=SHOP+'users/sign_up';
+  $('.join').href=SHOP+'users/sign_in';
   $('.c-how').textContent=HOW;
   function renderClaim(again){
     form.hidden=!!claimed; got.hidden=!claimed;

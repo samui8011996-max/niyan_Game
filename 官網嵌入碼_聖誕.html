@@ -1,7 +1,12 @@
 <!-- 聖誕胖胖貓送禮：貼到 SHOPLINE 的「自訂 HTML」區塊。網址換成你的 Pages 網址 -->
 <style>
+  /* 手機：直式；電腦（768px 以上）：寬版 */
   .nyx{max-width:480px; margin:0 auto; padding:0 16px;}
   .nyx-box{position:relative; width:100%; aspect-ratio:3/4; min-height:540px; max-height:85vh; border-radius:24px; overflow:hidden; box-shadow:0 12px 30px rgba(52,65,75,.25); background:#34414B;}
+  @media (min-width:768px){
+    .nyx{max-width:1040px;}
+    .nyx-box{aspect-ratio:16/9; min-height:520px; max-height:82vh;}
+  }
   .nyx-box iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block;}
 </style>
 <div class="nyx">

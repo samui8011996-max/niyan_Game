@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS game_leads (
 );
 CREATE INDEX IF NOT EXISTS idx_game_leads_created ON game_leads(created_at DESC);
 
--- 排行榜：每位玩家（裝置）每款遊戲只留最高分
+-- 排行榜：每個 email 每款遊戲只留最高分
 CREATE TABLE IF NOT EXISTS game_scores (
   game        TEXT NOT NULL,                -- xmas|catch
-  player_id   TEXT NOT NULL,                -- 前端產生、存在 localStorage 的玩家 ID
-  nick        TEXT NOT NULL,                -- 暱稱（最多 10 字）
+  player_id   TEXT NOT NULL,                -- 玩家 email（小寫）
+  nick        TEXT NOT NULL,                -- 排行榜上顯示的打碼 email，例如 ar***
   score       INTEGER NOT NULL,             -- 最高分
   created_at  INTEGER NOT NULL,
   updated_at  INTEGER NOT NULL,             -- 拿到最高分的時間（同分比先拿到的排前面）
