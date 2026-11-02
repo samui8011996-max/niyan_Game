@@ -69,21 +69,13 @@
   .best{margin:0 0 14px; font-size:13px; color:var(--grey);}
   .best b{color:var(--red);}
 
-  /* 排行榜 */
-  .lb{margin:0 0 14px; padding:10px 12px 8px; border-radius:16px; background:#F6F1E8; text-align:left;}
-  .lb-h{display:flex; justify-content:space-between; align-items:baseline; margin:0 0 6px; font-size:14px; font-weight:700;}
-  .lb-h small{font-weight:400; font-size:12px; color:var(--grey);}
-  .lb ol{list-style:none; margin:0; padding:0; font-size:13px;}
-  .lb li{display:flex; align-items:center; gap:8px; padding:3px 6px; border-radius:8px;}
-  .lb li .n{flex:none; width:18px; text-align:center; font-weight:700; color:var(--grey);}
-  .lb li:nth-child(1) .n{color:#C9A15B;}
-  .lb li:nth-child(2) .n{color:#8E9AA2;}
-  .lb li:nth-child(3) .n{color:#B0805A;}
-  .lb li .k{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .lb li b{color:var(--red);}
-  .lb li.me{background:#fff; box-shadow:inset 0 0 0 1.5px var(--gold);}
-  .lb-me{margin:4px 0 0; font-size:12px; color:var(--brown); text-align:center;}
-  .lb-me:empty{display:none;}
+  /* 目前最高分＋你的最高紀錄（完整排行榜只在出貨幫手看） */
+  .rec{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 10px;}
+  .rec div{background:#F6F1E8; border-radius:14px; padding:8px 6px;}
+  .rec small{display:block; font-size:12px; color:var(--grey);}
+  .rec b{display:block; font-size:22px; line-height:1.3; color:var(--red); letter-spacing:1px;}
+  .rec-note{margin:0 0 12px; font-size:12px; font-weight:700; color:var(--brown);}
+  .rec-note:empty{display:none;}
   .go2{display:flex; gap:8px;}
   .go2 .btn{flex:1; min-width:0; padding:10px 8px; font-size:14px; letter-spacing:1px; text-decoration:none; text-align:center;}
   .stat{display:flex; justify-content:center; gap:14px; margin:0 0 12px; font-size:13px; color:var(--grey);}
@@ -111,9 +103,8 @@
 
   /* 電腦寬畫面：卡片改左右兩欄、按鈕置中；手機維持直式 */
   @media (min-width:720px) and (min-aspect-ratio:5/4){
-    .card{max-width:760px; display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center;}
-    .card .lb{margin-bottom:0;}
-    .ov-end .card{align-items:start;}
+    .ov-end .card{max-width:760px; display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;}
+    .ov-start .card{max-width:420px;}
     .pad{justify-content:center;}
     .pad button{flex:0 1 260px;}
   }
@@ -153,16 +144,10 @@
         <div><canvas data-icon="g" width="92" height="92"></canvas><b>左鍵</b>丟綠禮物</div>
         <div><canvas data-icon="r" width="92" height="92"></canvas><b>右鍵</b>丟紅禮物</div>
       </div>
+      <div class="rec"><div><small>目前最高分</small><b class="r-top">—</b></div><div><small>你的最高紀錄</small><b class="r-mine">—</b></div></div>
+      <p class="rec-note n-start"></p>
       <button type="button" class="btn js-start" disabled>載入中…</button>
       <p class="how">手機：點下方綠色、紅色按鈕<br>送對 +100，連續送對分數加倍，送錯扣 50</p>
-      <p class="best s-best"></p>
-      </div>
-      <div class="col">
-      <div class="lb lb-start">
-        <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
-        <ol class="lb-list"></ol>
-        <p class="lb-me"></p>
-      </div>
       </div>
     </div>
   </div>
@@ -175,17 +160,13 @@
       <div class="big"><small>分數</small><span class="e-score">0</span></div>
       <p class="msg e-msg"></p>
       <div class="stat"><span>送達 <b class="e-ok">0</b></span><span>送錯 <b class="e-ng">0</b></span><span>最高連擊 <b class="e-combo">0</b></span></div>
-      <p class="best e-best"></p>
-      <div class="lb lb-end">
-        <div class="lb-h">大家的排行榜<small>前 5 名</small></div>
-        <ol class="lb-list"></ol>
-        <p class="lb-me"></p>
-      </div>
+      <div class="rec"><div><small>目前最高分</small><b class="r-top">—</b></div><div><small>你的最高紀錄</small><b class="r-mine">—</b></div></div>
+      <p class="rec-note n-end"></p>
 
       </div>
       <div class="col">
       <form class="claim c-form" novalidate>
-        <p class="claim-t">留下 Email 登錄排行榜<br>再送官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用，還不是會員？<a class="join" target="_top">加入會員</a></small></p>
+        <p class="claim-t">留下 Email 登錄分數<br>再送官網 <b>95 折</b>優惠碼<small class="note">優惠碼限官網會員使用，還不是會員？<a class="join" target="_top">加入會員</a></small></p>
         <input type="email" name="email" placeholder="你的 Email" autocomplete="email" inputmode="email" required>
         <div class="hp" aria-hidden="true"><label>網站 <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <label class="agree"><input type="checkbox" name="consent">我同意泥研製所寄送優惠與新品消息到這個 Email，可隨時取消訂閱。</label>
@@ -450,8 +431,7 @@
     $('.e-rank').textContent=rk[1];
     $('.e-msg').textContent=rk[2];
     $('.e-ok').textContent=ok; $('.e-ng').textContent=ng; $('.e-combo').textContent=maxCombo;
-    showBest($('.e-best'),first&&score>0);
-    endBoard();
+    endRec(first&&score>0);
     renderClaim();
     sfx('end');
     try{ window.parent.postMessage({type:'niyan-xmas:end', score:score},'*'); }catch(e){}
@@ -597,55 +577,41 @@
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
 
-  /* ===== 最高紀錄：這台裝置的（localStorage）＋大家的排行榜（/api/scores，用 email 登錄） ===== */
-  var lbStart=$('.lb-start'), lbEnd=$('.lb-end');
+  /* ===== 紀錄：你的最高紀錄（這台裝置）＋目前最高分（/api/scores）。完整排行榜在出貨幫手 ===== */
   var claimed=store.get('niyan_claim');            /* {code, email}；舊版只有 code */
   var myEmail=claimed&&claimed.email||'';
+  var topBest=null;                                /* null = 還沒讀到 */
 
-  function showBest(el,isNew){
-    if(!best){ el.textContent='還沒有紀錄，玩一局試試！'; return; }
-    el.innerHTML='';
-    el.appendChild(document.createTextNode(isNew?'刷新你的最高紀錄：':'你的最高紀錄：'));
-    var b=document.createElement('b'); b.textContent=best; el.appendChild(b);
-    el.appendChild(document.createTextNode(' 分'));
-  }
-  function renderBoard(el,d,hint){
-    var ol=el.querySelector('.lb-list'), me=el.querySelector('.lb-me');
-    ol.innerHTML='';
-    if(!d){ me.textContent='排行榜暫時連不上'; return; }
-    var top=d.top.slice(0,5), inTop=false;
-    top.forEach(function(r,i){
-      var li=document.createElement('li'); if(r.me){ li.className='me'; inTop=true; }
-      var n=document.createElement('span'); n.className='n'; n.textContent=i+1;
-      var k=document.createElement('span'); k.className='k'; k.textContent=r.nick;
-      var s=document.createElement('b'); s.textContent=r.score;
-      li.appendChild(n); li.appendChild(k); li.appendChild(s); ol.appendChild(li);
-    });
-    if(d.me) me.textContent=inTop?'你目前第 '+d.me.rank+' 名':'你目前第 '+d.me.rank+' 名（'+d.me.score+' 分）';
-    else if(hint) me.textContent=hint;
-    else me.textContent=top.length?'':'還沒有人上榜，快來搶第一名！';
-  }
   function api(url,body){
     return fetch(url,body?{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}:undefined)
       .then(function(r){ return r.json().then(function(d){ if(!r.ok||!d.ok) throw new Error(d.error||''); return d; }); });
   }
-  function loadBoard(el,hint){
-    el.querySelector('.lb-me').textContent='排行榜載入中…';
-    api('/api/scores?game=xmas'+(myEmail?'&email='+encodeURIComponent(myEmail):''))
-      .then(function(d){ renderBoard(el,d,hint); })
-      .catch(function(){ renderBoard(el,null); });
+  function renderRec(isNew){
+    var top=topBest==null?'—':topBest?topBest:'—';
+    $$('.r-top').forEach(function(el){ el.textContent=top; });
+    $$('.r-mine').forEach(function(el){ el.textContent=best||'—'; });
+    var champ=best>0&&topBest!=null&&best>=topBest;
+    $('.n-start').textContent=champ?'你就是目前最高分！':topBest===0?'還沒有人登錄分數，搶第一個！':'';
+    var note='';
+    if(isNew) note=champ?'刷新紀錄，也是目前最高分！':'刷新你的最高紀錄！';
+    else if(champ) note='你就是目前最高分！';
+    if(!myEmail&&best>0) note+=(note?' ':'')+'留下 Email 就能登錄分數';
+    $('.n-end').textContent=note;
   }
-  /* 結算：留過 email 就自動更新最高分；還沒留就提示下面填 email 登錄 */
-  function endBoard(){
+  function loadTop(isNew){
+    api('/api/scores?game=xmas').then(function(d){ topBest=d.best; }).catch(function(){})
+      .then(function(){ renderRec(isNew); });
+  }
+  /* 結算：留過 email 就自動登錄最高分 */
+  function endRec(isNew){
+    renderRec(isNew);
     if(myEmail&&best>0){
-      lbEnd.querySelector('.lb-me').textContent='更新排行榜中…';
       api('/api/scores',{game:'xmas', email:myEmail, score:best})
-        .then(function(d){ renderBoard(lbEnd,d); })
-        .catch(function(){ loadBoard(lbEnd); });
-    }else loadBoard(lbEnd,best>0?'在下面留下 Email，就能用 '+best+' 分登上排行榜':'');
+        .then(function(d){ topBest=d.best; renderRec(isNew); })
+        .catch(function(){ loadTop(isNew); });
+    }else loadTop(isNew);
   }
-  showBest($('.s-best'),false);
-  loadBoard(lbStart);
+  loadTop(false);
 
   /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼，同時登錄分數 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);
@@ -672,7 +638,7 @@
       .then(function(d){
         claimed={code:d.code, email:email}; myEmail=email; store.set('niyan_claim',claimed);
         renderClaim(!d.isNew);
-        if(d.board) renderBoard(lbEnd,d.board);
+        if(d.best!=null){ topBest=d.best; renderRec(false); }
       })
       .catch(function(x){ err.textContent=x.message||'網路好像不太穩，請再試一次'; })
       .then(function(){ submit.disabled=false; submit.textContent='登錄分數並領取優惠碼'; });

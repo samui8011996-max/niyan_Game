@@ -13,8 +13,8 @@
 | `public/catch/index.html` | 招財貓接財氣 |
 | `public/assets/` | 素材（招福貓、百元鈔） |
 | `functions/api/claim.js` | 收 Email、存進 D1、回傳優惠碼，順便登錄排行榜 |
-| `functions/api/scores.js` | 排行榜：讀前 10 名、用 Email 更新最高分 |
-| `lib/scores.js` | 排行榜共用程式（打碼 Email、存分數、算名次） |
+| `functions/api/scores.js` | 客人讀目前最高分；帶管理密碼可讀完整排行榜（出貨幫手用）；用 Email 更新最高分 |
+| `lib/scores.js` | 排行榜共用程式（存分數、目前最高分、完整排行榜） |
 | `functions/api/leads.js` | 下載 Email 名單 CSV：`/api/leads?key=管理密碼` |
 | `schema.sql` | D1 資料表 `game_leads`（Email 名單）、`game_scores`（排行榜） |
 | `wrangler.toml` | Pages 設定：D1 綁定（DB → game）、優惠碼 `COUPON_CODE` |
