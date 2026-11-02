@@ -286,6 +286,9 @@
     });
   };
   skySheet.src='assets/starmoon.svg';
+  /* 聖誕樹：0=有星星和彩球洞（洞的位置 [x,y,半徑]，圖 266×360），1=素面 */
+  var TREE_W=[266,326], TREE_H=360, TREE_BALLS=[[150,144,14],[104,192,14],[170,246,15],[94,272,14]], BALL_COLORS=['#B3302E','#E6B85C','#F2C9C4','#E6B85C'];
+  var treeImgs=[0,1].map(function(i){ var im=new Image(); im.src='assets/tree'+i+'.webp'; return im; });
   var clock=0;
   var luckyImgs=[];
   ['fu','jin'].forEach(function(k){
@@ -301,7 +304,7 @@
 
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
-  var houses=[], gifts=[], parts=[], texts=[], snow=[];
+  var houses=[], trees=[], gifts=[], parts=[], texts=[], snow=[];
   var state='menu', score=0, lives=LIVES, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
   var best=store.get('niyan_xmas_best')||0;
 
@@ -312,7 +315,7 @@
     ctx.setTransform(dpr,0,0,dpr,0,0);
     var oldU=U;
     U=Math.min(W/9,H/(W>H*1.2?11:13));   /* 寬畫面時物件放大一點，不會顯得太小 */
-    if(oldU&&oldU!==U){ var f=U/oldU; houses.forEach(function(h){ h.x*=f; h.w*=f; h.s*=f; }); gifts.forEach(function(gf){ gf.x*=f; gf.y*=f; gf.vy*=f; }); }   /* 視窗大小變了，已經出現的房子跟著縮放 */
+    if(oldU&&oldU!==U){ var f=U/oldU; houses.forEach(function(h){ h.x*=f; h.w*=f; h.s*=f; }); trees.forEach(function(t){ t.x*=f; t.w*=f; t.h*=f; }); gifts.forEach(function(gf){ gf.x*=f; gf.y*=f; gf.vy*=f; }); }   /* 視窗大小變了，已經出現的房子跟著縮放 */
     small=W<500;   /* 手機或窄的外嵌框：煙囪判定放寬、開場慢一點 */
     padH=$('.pad').offsetHeight;
     ground=H-padH-U*0.5;
@@ -348,7 +351,15 @@
   function fillHouses(){
     var last=houses[houses.length-1];
     var right=last?last.x+last.w:W*0.75;
-    while(right<W+U*4){ var h=addHouse(right+U*rnd(0.5,1.8)); right=h.x+h.w; }
+    while(right<W+U*4){
+      var gap=U*rnd(0.5,1.8);
+      if(Math.random()<0.6){   /* 房子之間種聖誕樹（畫在房子後面） */
+        var k=Math.random()<0.5?0:1, th=U*rnd(1.9,2.6), tw=th*TREE_W[k]/TREE_H;
+        gap+=tw*0.7;
+        trees.push({x:right+gap/2-tw/2, w:tw, h:th, k:k, t:Math.random()*6});
+      }
+      var h=addHouse(right+gap); right=h.x+h.w;
+    }
   }
 
   /* ===== 畫圖 ===== */
@@ -454,7 +465,7 @@
   function start(){
     audio();
     score=0; lives=LIVES; elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
-    houses=[]; gifts=[]; parts=[]; texts=[]; built=0;
+    houses=[]; trees=[]; gifts=[]; parts=[]; texts=[]; built=0;
     fillHouses();
     state='count'; countdown=2.1;
     $$('.ov').forEach(function(o){ o.classList.remove('on'); });
@@ -552,6 +563,8 @@
       if(!h.done && state==='play'){ var g=geo(h); if(g.cx+g.cw/2+U*0.3<sleigh.x){ h.done='miss'; hurt(g.cx,g.top-U*1.4,'漏送了'); } }
     });
     houses=houses.filter(function(h){ return h.x+h.w>-U*2; });
+    trees.forEach(function(t){ t.x-=v*dt; });
+    trees=trees.filter(function(t){ return t.x+t.w>-U; });
     fillHouses();
 
     for(var i=gifts.length-1;i>=0;i--){
@@ -604,6 +617,15 @@
       else{ ctx.beginPath(); ctx.arc(s.x,s.y,Math.min(s.r,2.2),0,Math.PI*2); ctx.fill(); }
     });
 
+    trees.forEach(function(t){
+      var im=treeImgs[t.k], y=ground+U*0.1-t.h, k=t.w/TREE_W[t.k];
+      if(t.k===0) TREE_BALLS.forEach(function(b,i){   /* 彩球墊在樹後面，從洞裡透出來，輪流一亮一亮 */
+        ctx.fillStyle=BALL_COLORS[i]; ctx.beginPath(); ctx.arc(t.x+b[0]*k,y+b[1]*k,b[2]*k*1.15,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=0.5*Math.max(0,Math.sin(clock*3+i*1.6+t.t));
+        ctx.fillStyle='#FFFDF8'; ctx.fill(); ctx.globalAlpha=1;
+      });
+      if(im.complete&&im.naturalWidth) ctx.drawImage(im,t.x,y,t.w,t.h);
+    });
     houses.forEach(function(h){ drawHouse(ctx,h); });
     /* 地上積雪 */
     ctx.fillStyle='#F3F0EA'; ctx.fillRect(0,ground,W,H-ground);
