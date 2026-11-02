@@ -351,9 +351,14 @@
   function drawGift(c,x,y,s,color,rot,ribbon){
     ribbon=ribbon||'#F3E4BF';
     c.save(); c.translate(x,y); c.rotate(rot||0);
-    c.fillStyle=color; c.fillRect(-s/2,-s/2+s*0.08,s,s*0.92);
-    c.fillStyle='rgba(0,0,0,.12)'; c.fillRect(-s/2,-s/2+s*0.08,s,s*0.2);
-    c.fillStyle=ribbon; c.fillRect(-s*0.09,-s/2+s*0.08,s*0.18,s*0.92); c.fillRect(-s/2,-s*0.02,s,s*0.16);
+    /* 盒身圓角：先畫圓角外形，再把陰影和緞帶裁在裡面 */
+    var bx=-s/2, by=-s/2+s*0.08, bw=s, bh=s*0.92, r=s*0.14;
+    c.beginPath(); c.moveTo(bx+r,by); c.arcTo(bx+bw,by,bx+bw,by+bh,r); c.arcTo(bx+bw,by+bh,bx,by+bh,r); c.arcTo(bx,by+bh,bx,by,r); c.arcTo(bx,by,bx+bw,by,r); c.closePath();
+    c.fillStyle=color; c.fill();
+    c.save(); c.clip();
+    c.fillStyle='rgba(0,0,0,.12)'; c.fillRect(bx,by,bw,s*0.2);
+    c.fillStyle=ribbon; c.fillRect(-s*0.09,by,s*0.18,bh); c.fillRect(bx,-s*0.02,bw,s*0.16);
+    c.restore();
     c.strokeStyle=ribbon; c.lineWidth=s*0.1; c.lineCap='round';
     c.beginPath(); c.ellipse(-s*0.17,-s*0.5,s*0.16,s*0.1,-0.5,0,Math.PI*2); c.stroke();
     c.beginPath(); c.ellipse(s*0.17,-s*0.5,s*0.16,s*0.1,0.5,0,Math.PI*2); c.stroke();
