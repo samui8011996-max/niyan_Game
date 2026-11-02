@@ -29,7 +29,7 @@
   .tune[hidden]{display:none;}
   .tune input{width:180px; accent-color:#B3302E;}
   .tune b{min-width:36px; font-family:ui-monospace,Consolas,monospace;}
-  .paper{position:absolute; inset:0; z-index:10; pointer-events:none; background:url(assets/watercolor.jpg) center/cover; mix-blend-mode:soft-light; opacity:.9;}
+  .paper{position:absolute; inset:0; z-index:10; pointer-events:none; background:url(assets/watercolor.jpg) center/cover; mix-blend-mode:soft-light; opacity:.45;}
   @keyframes fade{from{opacity:0;}to{opacity:1;}}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-5px) rotate(-3deg);}}
 
@@ -126,7 +126,7 @@
   <canvas id="cv"></canvas>
   <div class="paper"></div>
   <!-- 調整用：網址加 ?tune 才會出現，客人看不到 -->
-  <label class="tune" hidden>水彩透明度 <input type="range" min="0" max="1" step="0.05" value="0.9"> <b>0.90</b></label>
+  <label class="tune" hidden>水彩透明度 <input type="range" min="0" max="1" step="0.05" value="0.45"> <b>0.45</b></label>
 
   <div class="hud">
     <span class="pill">分數 <b class="h-score">0</b></span>
@@ -277,6 +277,24 @@
     loaded();
   };
   houseSheet.src='assets/houses.svg';
+  /* 星星月亮圖：0=滿月，其餘是星星（四角星×4、五角星、小星×2），切成小圖 */
+  var SKY_SRC=[[270,114,159,159],[473.5,279.2,19.7,21.4],[152.9,270.8,20.9,22.7],[235.3,327,20.9,22.7],[552.2,251.4,29.6,32.3],[47.2,100.2,17.7,16.4],[244.6,60.1,6.5,7],[164,108.9,6.5,7]];
+  /* 固定在天空的星星：[x 佔寬比例, y 佔天空高度比例, 圖, 大小(U), 閃爍相位] */
+  var STARS=[[0.06,0.30,4,0.5,0.0],[0.15,0.62,1,0.32,1.7],[0.24,0.18,6,0.16,3.1],[0.33,0.48,5,0.3,0.6],[0.40,0.12,2,0.38,2.4],
+    [0.47,0.70,7,0.16,4.0],[0.53,0.36,3,0.42,1.1],[0.60,0.14,6,0.15,5.2],[0.66,0.58,4,0.46,2.9],[0.72,0.30,7,0.14,0.3],
+    [0.93,0.46,1,0.36,3.7],[0.88,0.70,5,0.26,4.6],[0.97,0.16,2,0.3,1.4],[0.10,0.80,3,0.3,5.8]];
+  var skyImgs=[];
+  var skySheet=new Image();
+  skySheet.onload=function(){
+    SKY_SRC.forEach(function(r,i){
+      var k=(i?60:240)/Math.max(r[2],r[3]), sc=document.createElement('canvas');
+      sc.width=Math.ceil(r[2]*k); sc.height=Math.ceil(r[3]*k);
+      sc.getContext('2d').drawImage(skySheet,r[0],r[1],r[2],r[3],0,0,sc.width,sc.height);
+      skyImgs.push(sc);
+    });
+  };
+  skySheet.src='assets/starmoon.svg';
+  var clock=0;
   var luckyImgs=[];
   ['fu','jin'].forEach(function(k){
     fetch('assets/lucky-'+k+'.svg').then(function(r){ return r.text(); }).then(function(svg){
@@ -503,6 +521,7 @@
   function pop(x,y,txt,col){ texts.push({x:x, y:y, txt:txt, c:col, life:1}); }
 
   function update(dt){
+    clock+=dt;
     sleigh.t+=dt;
     sleigh.y=Math.max(U*2.9,H*0.2)+Math.sin(sleigh.t*2)*U*0.15;
     snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; s.a+=s.va*dt; if(s.y>H+8){ s.y=-8; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
@@ -549,9 +568,23 @@
     var g=ctx.createLinearGradient(0,0,0,H);
     g.addColorStop(0,'#2B3640'); g.addColorStop(1,'#4A5A63');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    /* 月亮 */
-    ctx.fillStyle='rgba(251,235,211,.9)'; ctx.beginPath(); ctx.arc(W*0.82,H*0.16,U*0.7,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#2E3943'; ctx.beginPath(); ctx.arc(W*0.82+U*0.3,H*0.16-U*0.15,U*0.6,0,Math.PI*2); ctx.fill();
+    if(skyImgs.length){
+      /* 星星：位置固定，各自一閃一閃 */
+      var skyH=ground*0.62;
+      STARS.forEach(function(st){
+        var im=skyImgs[st[2]], tw=0.5+0.5*Math.sin(clock*(1.6+st[4]*0.15)+st[4]);
+        var sz=U*st[3]*(0.8+0.3*tw), k=sz/Math.max(im.width,im.height);
+        ctx.globalAlpha=0.35+0.65*tw;
+        ctx.drawImage(im,W*st[0]-im.width*k/2,skyH*st[1]-im.height*k/2,im.width*k,im.height*k);
+      });
+      ctx.globalAlpha=1;
+      /* 滿月 + 一呼一吸的光暈 */
+      var mx=W*0.82, my=Math.max(H*0.16,U*1.6), mr=U*0.75, glow=mr*(1.9+0.15*Math.sin(clock*1.2));
+      var mg=ctx.createRadialGradient(mx,my,mr*0.9,mx,my,glow);
+      mg.addColorStop(0,'rgba(248,233,201,.28)'); mg.addColorStop(1,'rgba(248,233,201,0)');
+      ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(mx,my,glow,0,Math.PI*2); ctx.fill();
+      ctx.drawImage(skyImgs[0],mx-mr,my-mr,mr*2,mr*2);
+    }
     /* 遠山 */
     ctx.fillStyle='#3E4C56';
     ctx.beginPath(); ctx.moveTo(0,ground);
