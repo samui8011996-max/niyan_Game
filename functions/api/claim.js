@@ -42,10 +42,15 @@ export async function onRequestPost({ request, env }) {
     .bind(email, game, score, src, now)
     .first();
 
+  // 排行榜出問題（例如資料表還沒建）也不能擋住領券
   let lb = null;
   if (MAX[game]) {
-    if (score > 0 && score <= MAX[game]) await saveScore(env.DB, game, email, score);
-    lb = await board(env.DB, game, email);
+    try {
+      if (score > 0 && score <= MAX[game]) await saveScore(env.DB, game, email, score);
+      lb = await board(env.DB, game, email);
+    } catch (e) {
+      console.error('leaderboard failed', e);
+    }
   }
 
   return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew: row.created_at === now, board: lb });
