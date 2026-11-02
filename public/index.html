@@ -511,7 +511,7 @@
   function update(dt){
     clock+=dt;
     sleigh.t+=dt;
-    sleigh.y=Math.max(U*2.9,H*0.2)+Math.sin(sleigh.t*2)*U*0.15;
+    sleigh.y=(W>H*1.2?U*2.3:Math.max(U*2.9,H*0.2))+Math.sin(sleigh.t*2)*U*0.15;   /* 寬螢幕雪橇飛高一點 */
     snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; s.a+=s.va*dt; if(s.y>H+8){ s.y=-8; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
     parts.forEach(function(p){ p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=U*8*dt; });
     parts=parts.filter(function(p){ return p.life>0; });
