@@ -327,7 +327,7 @@
   function addHouse(x){
     var k=Math.floor(Math.random()*HOUSE_TYPES.length), t=HOUSE_TYPES[k];
     var room=ground-(Math.max(U*2.9,H*0.2)+U*1.1)-U;   /* 雪橇底部到地面還剩多少高度（留給煙囪和泡泡） */
-    var s=Math.min(U*rnd(3.6,4.2)/t.s[2], Math.min(U*3.9,room)/t.s[3]);   /* 太高的房子縮小一點，才不會撞到雪橇 */
+    var s=Math.min(U*rnd(4.4,5.0)/t.s[2], Math.min(U*4.8,room)/t.s[3]);   /* 太高的房子縮小一點，才不會撞到雪橇 */
     var h={x:x, w:t.s[2]*s, s:s, k:k, want:built++<WARMUP?'g':Math.random()<0.5?'g':'r', done:null, t:Math.random()*6,
       clx:t.p[0]+(t.e[0]-t.p[0])*rnd(0.42,0.62)};   /* 煙囪在右半邊屋頂上 */
     houses.push(h);
