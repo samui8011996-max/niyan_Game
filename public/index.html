@@ -578,7 +578,7 @@
   $$('.js-start').forEach(function(b){ b.onclick=start; });
 
   /* ===== 紀錄：你的最高紀錄（這台裝置）＋目前最高分（/api/scores）。完整排行榜在出貨幫手 ===== */
-  var claimed=store.get('niyan_xmas_claim');            /* {code, email}；每款遊戲各自記，不和招財貓共用 */
+  var claimed=null;                                /* {code, email}；不記在瀏覽器：每次打開都要先留 Email（同一次再玩不用重填） */
   var myEmail=claimed&&claimed.email||'';
   var topBest=null;                                /* null = 還沒讀到 */
 
@@ -636,7 +636,7 @@
     submit.disabled=true; submit.textContent='處理中…';
     api('/api/claim',{email:email, consent:true, game:'xmas', score:best, src:SRC, website:form.website.value})
       .then(function(d){
-        claimed={code:d.code, email:email}; myEmail=email; store.set('niyan_xmas_claim',claimed);
+        claimed={code:d.code, email:email}; myEmail=email;
         renderClaim(!d.isNew);
         if(d.best!=null){ topBest=d.best; renderRec(false); }
       })
