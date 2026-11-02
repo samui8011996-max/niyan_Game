@@ -220,9 +220,9 @@
   var W=0, H=0, U=0, ground=0, padH=0, small=false;
 
   /* ===== 素材 ===== */
-  var catImg=new Image();
-  catImg.onload=function(){ var b=$('.ov-start .js-start'); b.disabled=false; b.textContent='開始'; drawIcons(); };
-  catImg.src='assets/cat.svg';
+  var sledImg=new Image();   /* 雪橇貓（含帽子、圍巾），車頭朝右 */
+  sledImg.onload=function(){ var b=$('.ov-start .js-start'); b.disabled=false; b.textContent='開始'; drawIcons(); };
+  sledImg.src='assets/sleigh.svg';
 
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
@@ -283,44 +283,11 @@
     c.beginPath(); c.ellipse(s*0.17,-s*0.5,s*0.16,s*0.1,0.5,0,Math.PI*2); c.stroke();
     c.restore();
   }
-  function drawHat(c,cw,ch){
-    /* 聖誕帽：坐標以貓圖左上角為原點 */
-    c.save();
-    var bx=cw*0.43, by=ch*0.13, bw=cw*0.5;
-    c.fillStyle='#B3302E';
-    c.beginPath(); c.moveTo(bx-bw/2,by); c.quadraticCurveTo(bx-bw*0.1,by-ch*0.3,bx+bw*0.55,by-ch*0.2); c.quadraticCurveTo(bx+bw*0.3,by-ch*0.1,bx+bw/2,by); c.closePath(); c.fill();
-    c.fillStyle='#FFFDF8';
-    c.beginPath(); c.ellipse(bx,by,bw*0.56,ch*0.045,0,0,Math.PI*2); c.fill();
-    c.beginPath(); c.arc(bx+bw*0.58,by-ch*0.2,cw*0.065,0,Math.PI*2); c.fill();
-    c.restore();
-  }
   function drawSleigh(c,x,y,cw,t){
-    /* 以雪橇中心為原點；貓坐在裡面，雪橇往右飛 */
-    var ch=cw*456/404;
+    /* 原點在雪橇中心，滑板底部約在 y+cw*0.53（禮物從這附近掉下去） */
+    var w=cw*1.9, h=w*534.48/886.1;
     c.save(); c.translate(x,y); c.rotate(Math.sin(t*2)*0.03);
-    /* 貓 + 帽子 */
-    c.save(); c.translate(-cw*0.55,-ch*0.78);
-    if(catImg.complete) c.drawImage(catImg,0,0,cw,ch);
-    drawHat(c,cw,ch);
-    c.restore();
-    /* 雪橇身體 */
-    var L=cw*1.5, sh=ch*0.42;
-    c.fillStyle='#B3302E';
-    c.beginPath();
-    c.moveTo(-L*0.55,-sh*0.2);
-    c.quadraticCurveTo(-L*0.6,sh*0.6,-L*0.35,sh*0.75);
-    c.lineTo(L*0.32,sh*0.75);
-    c.quadraticCurveTo(L*0.55,sh*0.7,L*0.55,sh*0.1);
-    c.quadraticCurveTo(L*0.62,-sh*0.35,L*0.45,-sh*0.42);
-    c.quadraticCurveTo(L*0.36,-sh*0.2,L*0.38,0);
-    c.lineTo(-L*0.4,0);
-    c.quadraticCurveTo(-L*0.45,-sh*0.25,-L*0.55,-sh*0.2);
-    c.fill();
-    c.fillStyle='#C9A15B'; c.fillRect(-L*0.45,sh*0.22,L*0.85,sh*0.1);
-    /* 滑板 */
-    c.strokeStyle='#C9A15B'; c.lineWidth=cw*0.05; c.lineCap='round';
-    c.beginPath(); c.moveTo(-L*0.5,sh*1.05); c.lineTo(L*0.45,sh*1.05); c.quadraticCurveTo(L*0.7,sh*1.05,L*0.62,sh*0.75); c.stroke();
-    c.beginPath(); c.moveTo(-L*0.25,sh*0.75); c.lineTo(-L*0.25,sh*1.05); c.moveTo(L*0.2,sh*0.75); c.lineTo(L*0.2,sh*1.05); c.stroke();
+    if(sledImg.complete) c.drawImage(sledImg,-w*0.48,cw*0.53-h,w,h);
     c.restore();
   }
   function drawBubble(c,x,y,r,want,t){
@@ -573,7 +540,7 @@
     if(e.target.tagName==='BUTTON' && (e.key===' '||e.key==='Enter')) return;   /* 讓按鈕自己處理 */
     if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'||e.key==='z'||e.key==='Z'){ e.preventDefault(); drop('g'); }
     if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'||e.key==='x'||e.key==='X'){ e.preventDefault(); drop('r'); }
-    if((e.key===' '||e.key==='Enter') && (state==='menu'&&catImg.complete || state==='over'&&$('.ov-end.on'))){ e.preventDefault(); start(); }
+    if((e.key===' '||e.key==='Enter') && (state==='menu'&&sledImg.complete || state==='over'&&$('.ov-end.on'))){ e.preventDefault(); start(); }
   });
   $$('.js-start').forEach(function(b){ b.onclick=start; });
 
