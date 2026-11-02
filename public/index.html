@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>聖誕胖胖貓送禮｜泥研製所</title>
-<meta name="description" content="聖誕胖胖貓坐雪橇送禮物，看清楚煙囪要紅色還是綠色，60 秒內送出最多份！">
+<meta name="description" content="聖誕胖胖貓坐雪橇送禮物，看清楚煙囪要紅色還是綠色，越送越快，看你能撐多久！">
 <link rel="icon" href="favicon.png">
 <style>
   :root{
@@ -33,6 +33,10 @@
   .hud{position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:8px; padding:10px 12px; pointer-events:none; font-weight:700;}
   .pill{background:rgba(255,253,248,.92); border:1.5px solid var(--gold); border-radius:999px; padding:3px 12px; font-size:14px; white-space:nowrap;}
   .pill b{color:var(--red); font-size:17px;}
+  .h-life{color:var(--red); font-size:17px; letter-spacing:2px;}
+  .h-life i{font-style:normal; color:#D9D3CA;}
+  .h-life.hurt{animation:hurt .45s;}
+  @keyframes hurt{0%,100%{transform:none;}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
   .sp{flex:1;}
   .mute{pointer-events:auto; cursor:pointer; color:var(--grey); font-weight:400; font-size:12px;}
   .combo{position:absolute; top:50px; left:0; right:0; text-align:center; font-weight:700; font-size:15px; color:#F3E4BF; text-shadow:0 1px 3px rgba(0,0,0,.4); opacity:0; transition:opacity .2s; pointer-events:none;}
@@ -124,7 +128,7 @@
 
   <div class="hud">
     <span class="pill">分數 <b class="h-score">0</b></span>
-    <span class="pill h-time">60 秒</span>
+    <span class="pill h-life"></span>
     <span class="sp"></span>
     <span class="pill h-done">送達 0</span>
     <button type="button" class="pill mute"></button>
@@ -141,7 +145,7 @@
       <div class="col">
       <canvas class="icon" data-icon="sleigh" width="220" height="200"></canvas>
       <h1>聖誕胖胖貓送禮</h1>
-      <p class="sub">60 秒內把禮物丟進煙囪<br>煙囪要<b>什麼顏色</b>，就丟什麼顏色</p>
+      <p class="sub">每個煙囪都要送到，越送越快<br>煙囪要<b>什麼顏色</b>，就丟什麼顏色</p>
       <div class="rules">
         <div><canvas data-icon="bubble" width="92" height="92"></canvas><b>看煙囪</b>上面的顏色</div>
         <div><canvas data-icon="g" width="92" height="92"></canvas><b>左鍵</b>丟綠禮物</div>
@@ -150,7 +154,7 @@
       <div class="rec"><div><small>目前最高分</small><b class="r-top">—</b></div><div><small>你的最高紀錄</small><b class="r-mine">—</b></div></div>
       <p class="rec-note n-start"></p>
       <button type="button" class="btn js-start" disabled>載入中…</button>
-      <p class="how">手機：點下方綠色、紅色按鈕<br>送對 +100，連續送對分數加倍，送錯扣 50</p>
+      <p class="how">手機：點下方綠色、紅色按鈕<br>送對 +100，連續送對分數加倍<br>送錯或漏送扣一顆心，3 顆用完就結束</p>
       </div>
     </div>
   </div>
@@ -162,7 +166,7 @@
       <div class="rank e-rank"></div>
       <div class="big"><small>分數</small><span class="e-score">0</span></div>
       <p class="msg e-msg"></p>
-      <div class="stat"><span>送達 <b class="e-ok">0</b></span><span>送錯 <b class="e-ng">0</b></span><span>最高連擊 <b class="e-combo">0</b></span></div>
+      <div class="stat"><span>送達 <b class="e-ok">0</b></span><span>撐了 <b class="e-time">0</b> 秒</span><span>最高連擊 <b class="e-combo">0</b></span></div>
       <div class="rec"><div><small>目前最高分</small><b class="r-top">—</b></div><div><small>你的最高紀錄</small><b class="r-mine">—</b></div></div>
       <p class="rec-note n-end"></p>
 
@@ -192,8 +196,8 @@
 <script>
 (function(){
   /* ===== 可調整的設定 ===== */
-  var DURATION=60;                 /* 一局秒數 */
-  var PTS_OK=100, PTS_NG=-50;      /* 送對／送錯 */
+  var LIVES=3;                     /* 送錯或漏送一間扣一顆心，用完結束（沒有時間限制） */
+  var PTS_OK=100;                  /* 送對一間 */
   var COOLDOWN=0.28;               /* 兩次丟禮物最短間隔（秒） */
   var WARMUP=4;                    /* 開場前幾間房子都要綠禮物，讓人先熟悉 */
   /* 結算稱號：分數門檻由低到高 */
@@ -298,7 +302,7 @@
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
   var houses=[], gifts=[], parts=[], texts=[], snow=[];
-  var state='menu', score=0, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
+  var state='menu', score=0, lives=LIVES, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
   var best=store.get('niyan_xmas_best')||0;
 
   function resize(){
@@ -402,7 +406,7 @@
       c.font='700 '+Math.round(U*0.5)+'px "PingFang TC","Microsoft JhengHei",sans-serif';
       c.textAlign='center'; c.textBaseline='middle';
       c.fillStyle=h.done==='ok'?'#F6D57A':'#E0A39E';
-      c.fillText(h.done==='ok'?'謝謝':'不對',g.cx,g.top-U*0.7);
+      c.fillText(h.done==='ok'?'謝謝':h.done==='ng'?'不對':'漏送',g.cx,g.top-U*0.7);
     }
   }
   function drawLucky(c,h,g){
@@ -443,12 +447,13 @@
 
   /* ===== 遊戲流程 ===== */
   /* 前 20 秒等速，之後慢慢加快，最快是開場的 1.4 倍 */
-  function speed(){ return U*(small?2.8:3.2)*(1+0.4*clamp((elapsed/DURATION-0.33)/0.67,0,1)); }
+  /* 前 15 秒等速，之後一直加快：每分鐘快 0.6 倍，最快是開場的 3 倍 */
+  function speed(){ return U*(small?2.8:3.2)*Math.min(3,1+0.6*Math.max(0,elapsed-15)/60); }
   function buzz(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }   /* iPhone 不支援，會直接略過 */
 
   function start(){
     audio();
-    score=0; elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
+    score=0; lives=LIVES; elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
     houses=[]; gifts=[]; parts=[]; texts=[]; built=0;
     fillHouses();
     state='count'; countdown=2.1;
@@ -475,12 +480,17 @@
       if(luckyImgs.length) h.cat={img:luckyImgs[Math.floor(Math.random()*luckyImgs.length)], t:0, dir:Math.random()<0.5?-1:1};
       sfx('ok'); buzz(18);
     }else{
-      h.done='ng'; ng++; combo=0;
-      score=Math.max(0,score+PTS_NG);
+      h.done='ng'; ng++;
       burst(g.cx,g.top,['#757575','#4A3F35'],10);
-      pop(g.cx,g.top-U*1.4,'送錯了 '+PTS_NG,'#F2B8B0');
-      sfx('ng'); buzz([50,40,50]);
+      hurt(g.cx,g.top-U*1.4,'送錯了');
     }
+  }
+  function hurt(x,y,txt){
+    combo=0; lives--;
+    pop(Math.max(U*1.2,x),y,txt,'#F2B8B0');
+    sfx('ng'); buzz([50,40,50]);
+    var el=$('.h-life'); el.classList.remove('hurt'); void el.offsetWidth; el.classList.add('hurt');
+    if(lives<=0) end();
   }
   function miss(gift,y){
     combo=0;
@@ -497,7 +507,7 @@
     $('.e-score').textContent=score;
     $('.e-rank').textContent=rk[1];
     $('.e-msg').textContent=rk[2];
-    $('.e-ok').textContent=ok; $('.e-ng').textContent=ng; $('.e-combo').textContent=maxCombo;
+    $('.e-ok').textContent=ok; $('.e-time').textContent=Math.floor(elapsed); $('.e-combo').textContent=maxCombo;
     endRec(first&&score>0);
     renderClaim();
     sfx('end');
@@ -536,7 +546,11 @@
     elapsed+=dt; cool=Math.max(0,cool-dt);
     var v=speed();
     worldX+=v*dt;
-    houses.forEach(function(h){ h.x-=v*dt; });
+    houses.forEach(function(h){
+      h.x-=v*dt;
+      /* 煙囪已經過了雪橇正下方、禮物丟不到了 = 漏送 */
+      if(!h.done && state==='play'){ var g=geo(h); if(g.cx+g.cw/2+U*0.3<sleigh.x){ h.done='miss'; hurt(g.cx,g.top-U*1.4,'漏送了'); } }
+    });
     houses=houses.filter(function(h){ return h.x+h.w>-U*2; });
     fillHouses();
 
@@ -552,7 +566,6 @@
       if(!gone && bottom>=ground){ miss(gf,ground); gone=true; }
       if(gone) gifts.splice(i,1);
     }
-    if(elapsed>=DURATION) end();
     hud();
   }
 
@@ -622,10 +635,11 @@
     }
   }
 
-  var hScore=$('.h-score'), hTime=$('.h-time'), hDone=$('.h-done'), hCombo=$('.combo');
+  var hScore=$('.h-score'), hLife=$('.h-life'), hDone=$('.h-done'), hCombo=$('.combo');
   function hud(){
     hScore.textContent=score;
-    hTime.textContent=Math.ceil(Math.max(0,DURATION-elapsed))+' 秒';
+    var hl=''; for(var i=0;i<LIVES;i++) hl+=i<lives?'♥':'<i>♥</i>';
+    if(hLife.innerHTML!==hl) hLife.innerHTML=hl;
     hDone.textContent='送達 '+ok;
     var mult=combo>=10?3:combo>=5?2:1;
     hCombo.classList.toggle('on',combo>=3&&state==='play');
