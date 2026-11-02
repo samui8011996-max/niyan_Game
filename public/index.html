@@ -233,6 +233,19 @@
     {o:'#8C7B66',b:'#FAF6EE',l:'#8C7B66',e:'#F2B8B5'},   /* 純淨白 */
     {o:'#5E5E5A',b:'#BDBDB8',l:'#5E5E5A',e:'#F2B8B5'}    /* 清水灰 */
   ];
+  /* 雪花圖：一張 25 片，切成小圖跟圓點雪一起飄 */
+  var FLAKES=[[87,287,101,115],[223,288,73,83],[339,288,74,83],[588,288,72,83],[699,288,82,93],[814,288,100,113],[214,393,90,102],[337,394,80,91],[446,288,109,124],[585,395,79,90],[698,400,84,95],[88,443,97,115],[445,437,110,126],[815,442,97,116],[222,518,74,86],[337,508,79,89],[584,510,80,91],[713,524,74,81],[88,603,98,111],[220,624,79,89],[336,619,82,94],[448,597,104,117],[584,624,80,90],[698,619,84,94],[814,603,98,111]];
+  var flakeImgs=[];
+  var flakeSheet=new Image();
+  flakeSheet.onload=function(){
+    FLAKES.forEach(function(f){
+      var k=40/Math.max(f[2],f[3]), fc=document.createElement('canvas');
+      fc.width=Math.ceil(f[2]*k); fc.height=Math.ceil(f[3]*k);
+      fc.getContext('2d').drawImage(flakeSheet,f[0],f[1],f[2],f[3],0,0,fc.width,fc.height);
+      flakeImgs.push(fc);
+    });
+  };
+  flakeSheet.src='assets/snowflakes.svg';
   var luckyImgs=[];
   ['fu','jin'].forEach(function(k){
     fetch('assets/lucky-'+k+'.svg').then(function(r){ return r.text(); }).then(function(svg){
@@ -262,7 +275,11 @@
     ground=H-padH-U*0.5;
     sleigh.x=W*0.3;
     snow=[];
-    for(var i=0;i<Math.round(W*H/9000);i++) snow.push({x:Math.random()*W, y:Math.random()*H, r:rnd(0.8,2.2), v:rnd(15,40)});
+    for(var i=0;i<Math.round(W*H/9000);i++){
+      var fl=i%4===0;   /* 四分之一是小雪花，其餘是圓點 */
+      snow.push({x:Math.random()*W, y:Math.random()*H, r:fl?rnd(4,6.5):rnd(0.8,2.2), v:fl?rnd(14,26):rnd(15,40),
+        f:fl?Math.floor(Math.random()*FLAKES.length):-1, a:Math.random()*6, va:rnd(-1,1)});
+    }
   }
   window.addEventListener('resize',resize);
   resize();
@@ -462,7 +479,7 @@
   function update(dt){
     sleigh.t+=dt;
     sleigh.y=Math.max(U*3.2,H*0.2)+Math.sin(sleigh.t*2)*U*0.15;
-    snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; if(s.y>H){ s.y=-4; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
+    snow.forEach(function(s){ s.y+=s.v*dt; s.x-=(state==='play'?speed()*0.15:6)*dt; s.a+=s.va*dt; if(s.y>H+8){ s.y=-8; s.x=Math.random()*W; } if(s.x<0) s.x+=W; });
     parts.forEach(function(p){ p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=U*8*dt; });
     parts=parts.filter(function(p){ return p.life>0; });
     texts.forEach(function(t){ t.life-=dt; t.y-=U*0.8*dt; });
@@ -516,7 +533,11 @@
     ctx.lineTo(W,ground); ctx.fill();
     /* 雪花 */
     ctx.fillStyle='rgba(255,255,255,.75)';
-    snow.forEach(function(s){ ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill(); });
+    snow.forEach(function(s){
+      var fi=s.f>=0&&flakeImgs[s.f];
+      if(fi){ var k=s.r*2/Math.max(fi.width,fi.height); ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.a); ctx.drawImage(fi,-fi.width*k/2,-fi.height*k/2,fi.width*k,fi.height*k); ctx.restore(); }
+      else{ ctx.beginPath(); ctx.arc(s.x,s.y,Math.min(s.r,2.2),0,Math.PI*2); ctx.fill(); }
+    });
 
     houses.forEach(function(h){ drawHouse(ctx,h); });
     /* 地上積雪 */
