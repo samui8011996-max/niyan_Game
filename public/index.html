@@ -24,6 +24,8 @@
   button{font:inherit; letter-spacing:inherit;}
   #stage{position:fixed; inset:0;}
   #cv{display:block; width:100%; height:100%; touch-action:none;}
+  /* 水彩紙紋：灰階水彩圖用柔光疊在最上層，整個畫面變水彩感；不擋點擊 */
+  .paper{position:absolute; inset:0; z-index:10; pointer-events:none; background:url(assets/watercolor.jpg) center/cover; mix-blend-mode:soft-light; opacity:.9;}
   @keyframes fade{from{opacity:0;}to{opacity:1;}}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-5px) rotate(-3deg);}}
 
@@ -118,6 +120,7 @@
 <body>
 <div id="stage">
   <canvas id="cv"></canvas>
+  <div class="paper"></div>
 
   <div class="hud">
     <span class="pill">分數 <b class="h-score">0</b></span>
