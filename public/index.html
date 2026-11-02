@@ -224,6 +224,27 @@
   sledImg.onload=function(){ var b=$('.ov-start .js-start'); b.disabled=false; b.textContent='開始'; drawIcons(); };
   sledImg.src='assets/sleigh.svg';
 
+  /* 送對了禮物打開會跳出招財貓：招福、金運兩款 × 六色（和選色測驗同一組顏色），隨機 */
+  var LUCKY_COLORS=[
+    {o:'#9A7432',b:'#F3D88E',l:'#9A7432',e:'#F2B8B5'},   /* 招財黃 */
+    {o:'#A8706B',b:'#F2C9C4',l:'#A8706B',e:'#E8A09A'},   /* 戀愛粉 */
+    {o:'#66724A',b:'#BEC79F',l:'#66724A',e:'#F2B8B5'},   /* 健康綠 */
+    {o:'#2B2724',b:'#3D3935',l:'#EFE6D6',e:'#F2B8B5'},   /* 炭錢黑 */
+    {o:'#8C7B66',b:'#FAF6EE',l:'#8C7B66',e:'#F2B8B5'},   /* 純淨白 */
+    {o:'#5E5E5A',b:'#BDBDB8',l:'#5E5E5A',e:'#F2B8B5'}    /* 清水灰 */
+  ];
+  var luckyImgs=[];
+  ['fu','jin'].forEach(function(k){
+    fetch('assets/lucky-'+k+'.svg').then(function(r){ return r.text(); }).then(function(svg){
+      LUCKY_COLORS.forEach(function(c){
+        var img=new Image();
+        img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace(/<style>[\s\S]*?<\/style>/,
+          '<style>.o{fill:'+c.o+'}.b{fill:'+c.b+'}.l{fill:'+c.l+'}.e{fill:'+c.e+'}</style>'));
+        luckyImgs.push(img);
+      });
+    }).catch(function(){});   /* 載不到就維持顯示「謝謝」 */
+  });
+
   /* ===== 狀態 ===== */
   var sleigh={x:0, y:0, t:0};
   var houses=[], gifts=[], parts=[], texts=[], snow=[];
@@ -322,11 +343,35 @@
     c.fillStyle='#6E4A2C'; c.fillRect(h.x+h.w*0.5-U*0.25,ground-U*0.8,U*0.5,U*0.8);
     /* 煙囪上方的需求泡泡 */
     if(!h.done) drawBubble(c,g.cx,g.top-U*0.85,U*0.42,h.want,h.t);
+    else if(h.cat) drawLucky(c,h,g);
     else{
       c.font='700 '+Math.round(U*0.5)+'px "PingFang TC","Microsoft JhengHei",sans-serif';
       c.textAlign='center'; c.textBaseline='middle';
       c.fillStyle=h.done==='ok'?'#F6D57A':'#E0A39E';
       c.fillText(h.done==='ok'?'謝謝':'不對',g.cx,g.top-U*0.7);
+    }
+  }
+  function drawLucky(c,h,g){
+    /* 禮物蓋子彈開，招財貓從煙囪裡蹦出來，之後坐在煙囪上輕輕晃 */
+    var t=h.cat.t, img=h.cat.img, ch=U*1.35, cw=ch*418/462;
+    var k=clamp(t/0.45,0,1), rise=1-Math.pow(1-k,3);
+    var sc=k<1?0.4+0.6*rise+Math.sin(k*Math.PI)*0.18:1;
+    var rimY=g.top-U*0.07;
+    c.save();
+    c.beginPath(); c.rect(g.cx-U*3,rimY-U*4,U*6,U*4); c.clip();   /* 煙囪口以下藏起來 */
+    c.translate(g.cx,rimY+ch*(1-rise)+U*0.05);
+    c.rotate(k<1?0:Math.sin(h.t*3)*0.06);
+    c.scale(sc,sc);
+    c.drawImage(img,-cw/2,-ch,cw,ch);
+    c.restore();
+    c.fillStyle='#FFFDF8'; c.fillRect(g.cx-g.cw/2-U*0.06,rimY,g.cw+U*0.12,U*0.09);   /* 煙囪口積雪蓋在貓前面 */
+    if(t<0.7){   /* 飛走的禮物蓋 */
+      var a=1-t/0.7, s=U*0.55;
+      c.save(); c.globalAlpha=a;
+      c.translate(g.cx+h.cat.dir*U*1.6*t,rimY-U*2.2*t+U*2*t*t); c.rotate(h.cat.dir*t*5);
+      c.fillStyle=COL[h.want]; c.fillRect(-s*0.58,-s*0.12,s*1.16,s*0.24);
+      c.fillStyle='#F3E4BF'; c.fillRect(-s*0.09,-s*0.12,s*0.18,s*0.24);
+      c.restore();
     }
   }
   function drawIcons(){
@@ -373,6 +418,7 @@
       score+=pts;
       burst(g.cx,g.top,['#F6D57A','#FFFDF8',COL[gift.c]],14);
       pop(g.cx,g.top-U*1.4,'+'+pts,'#F6D57A');
+      if(luckyImgs.length) h.cat={img:luckyImgs[Math.floor(Math.random()*luckyImgs.length)], t:0, dir:Math.random()<0.5?-1:1};
       sfx('ok'); buzz(18);
     }else{
       h.done='ng'; ng++; combo=0;
@@ -421,7 +467,7 @@
     parts=parts.filter(function(p){ return p.life>0; });
     texts.forEach(function(t){ t.life-=dt; t.y-=U*0.8*dt; });
     texts=texts.filter(function(t){ return t.life>0; });
-    houses.forEach(function(h){ h.t+=dt; });
+    houses.forEach(function(h){ h.t+=dt; if(h.cat) h.cat.t+=dt; });
 
     if(state==='count'){
       var n=Math.ceil(countdown/0.7);
