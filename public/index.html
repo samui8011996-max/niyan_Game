@@ -353,7 +353,7 @@
   }
   function drawLucky(c,h,g){
     /* 禮物蓋子彈開，招財貓從煙囪裡蹦出來，之後坐在煙囪上輕輕晃 */
-    var t=h.cat.t, img=h.cat.img, ch=U*1.35, cw=ch*418/462;
+    var t=h.cat.t, img=h.cat.img, ch=U*1.0, cw=ch*418/462;
     var k=clamp(t/0.45,0,1), rise=1-Math.pow(1-k,3);
     var sc=k<1?0.4+0.6*rise+Math.sin(k*Math.PI)*0.18:1;
     var rimY=g.top-U*0.07;
