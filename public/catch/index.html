@@ -447,7 +447,9 @@
 
   /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);
-  var claimed=store.get('niyan_claim');
+  /* 每款遊戲各自記玩過沒（不和聖誕遊戲共用）；{code, email}，email 用來之後自動登錄分數 */
+  var claimed=store.get('niyan_catch_claim');
+  if(claimed&&!claimed.email) claimed=null;
   var form=$('.c-form'), got=$('.c-got'), err=$('.c-form .err'), submit=$('.c-form .btn');
   $('.shop').href=SHOP;
   $('.join').href=SHOP+'users/sign_in';
@@ -455,6 +457,11 @@
   function renderClaim(again){
     form.hidden=!!claimed; got.hidden=!claimed;
     if(!claimed) return;
+    /* 留過 email 的，結算時把最高分記進遊玩紀錄 */
+    if(again===undefined&&best>0){
+      fetch('/api/scores',{method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({game:'catch', email:claimed.email, score:best})}).catch(function(){});
+    }
     $('.c-title').textContent=again?'這個 Email 已經領過囉，優惠碼在這裡':'你的 95 折優惠碼';
     $('.c-code').textContent=claimed.code;
     $('.copy').textContent='複製';
@@ -472,7 +479,7 @@
     }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
       .then(function(res){
         if(!res.ok||!res.d.ok) throw new Error(res.d.error||'');
-        claimed={code:res.d.code}; store.set('niyan_claim',claimed);
+        claimed={code:res.d.code, email:email.toLowerCase()}; store.set('niyan_catch_claim',claimed);
         renderClaim(!res.d.isNew);
       })
       .catch(function(x){ err.textContent=x.message||'網路好像不太穩，請再試一次'; })

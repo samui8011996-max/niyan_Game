@@ -3,7 +3,7 @@
 // 同一個 email 只存一筆，再送一次只會更新最高分。
 // 有排行榜的遊戲會順便把分數登錄上榜，回傳目前最高分。
 
-import { MAX, EMAIL_RE, saveScore, topScore } from '../../lib/scores.js';
+import { MAX, EMAIL_RE, saveScore, topScore, savePlay } from '../../lib/scores.js';
 
 const GAMES = ['catch', 'xmas', 'zodiac', 'guess'];
 
@@ -42,6 +42,10 @@ export async function onRequestPost({ request, env }) {
     .bind(email, game, score, src, now)
     .first();
 
+  // 「已經領過」只看這款遊戲（三款遊戲各自判斷）
+  const firstPlay = await savePlay(env.DB, game, email, score);
+  const isNew = firstPlay === null ? row.created_at === now : firstPlay;
+
   // 排行榜出問題（例如資料表還沒建）也不能擋住領券
   let best = null;
   if (MAX[game]) {
@@ -53,5 +57,5 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew: row.created_at === now, best });
+  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew, best });
 }
