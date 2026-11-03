@@ -621,11 +621,13 @@
 
     for(var i=gifts.length-1;i>=0;i--){
       var gf=gifts[i];
+      var prev=gf.y+U*0.27;   /* 這一格移動前的禮物底部 */
       gf.vy+=U*26*dt; gf.y+=gf.vy*dt; gf.rot+=gf.vr*dt;
       var bottom=gf.y+U*0.27, gone=false;
       for(var j=0;j<houses.length&&!gone;j++){
         var h=houses[j], g=geo(h);
-        if(!h.done && bottom>=g.top && gf.y<=g.top+U*0.4 && Math.abs(gf.x-g.cx)<=g.cw/2+U*(small?0.3:0.2)){ deliver(h,gf); gone=true; }
+        /* 看這一格的整段路線有沒有經過煙囪口：畫面卡頓時禮物一格掉很多，只看終點會直接穿過煙囪、被當成掉到屋頂 */
+        if(!h.done && bottom>=g.top && prev<=g.top+U*0.67 && Math.abs(gf.x-g.cx)<=g.cw/2+U*(small?0.3:0.2)){ deliver(h,gf); gone=true; }
         else if(gf.x>=h.x-U*0.1 && gf.x<=h.x+h.w+U*0.1 && bottom>=roofY(h,gf.x)){ miss(gf,bottom); gone=true; }
       }
       if(!gone && bottom>=ground){ miss(gf,ground); gone=true; }
