@@ -33,8 +33,9 @@
   .hud{position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:8px; padding:10px 12px; pointer-events:none; font-weight:700;}
   .pill{background:rgba(255,253,248,.92); border:1.5px solid var(--gold); border-radius:999px; padding:3px 12px; font-size:14px; white-space:nowrap;}
   .pill b{color:var(--red); font-size:17px;}
-  .h-life{color:var(--red); font-size:17px; letter-spacing:2px;}
-  .h-life i{font-style:normal; color:#D9D3CA;}
+  .h-life{display:inline-flex; align-items:center; gap:3px; color:var(--red); padding-top:5px; padding-bottom:5px;}
+  .h-life svg{display:block; width:17px; height:15px; fill:currentColor;}
+  .h-life svg.off{color:#D9D3CA;}
   .h-life.hurt{animation:hurt .45s;}
   @keyframes hurt{0%,100%{transform:none;}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
   .sp{flex:1;}
@@ -721,7 +722,8 @@
   var hScore=$('.h-score'), hLife=$('.h-life'), hDone=$('.h-done'), hCombo=$('.combo');
   function hud(){
     hScore.textContent=score;
-    var hl=''; for(var i=0;i<LIVES;i++) hl+=i<lives?'♥':'<i>♥</i>';
+    /* 愛心用 SVG 畫：文字「♥」在很多手機會變成彩色 emoji，扣掉的那顆變不了灰 */
+    var hl=''; for(var i=0;i<LIVES;i++) hl+='<svg viewBox="0 0 24 21"'+(i<lives?'':' class="off"')+'><path d="M12 21l-1.7-1.6C4.2 13.9 0 10.1 0 5.9 0 2.6 2.6 0 5.9 0c1.9 0 3.7.9 5 2.3l1.1 1.2 1.1-1.2C14.4.9 16.2 0 18.1 0 21.4 0 24 2.6 24 5.9c0 4.2-4.2 8-10.3 13.5z"/></svg>';
     if(hLife.innerHTML!==hl) hLife.innerHTML=hl;
     hDone.textContent='送達 '+ok;
     var mult=combo>=10?3:combo>=5?2:1;
