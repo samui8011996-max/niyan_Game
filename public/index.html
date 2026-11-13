@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>聖誕胖胖貓送禮｜泥研製所</title>
 <meta name="description" content="聖誕胖胖貓坐雪橇送禮物，看清楚煙囪要紅色還是綠色，越送越快，看你能撐多久！">
+<meta property="og:title" content="聖誕胖胖貓送禮｜換你來挑戰">
+<meta property="og:description" content="坐上雪橇把禮物丟進煙囪，越送越快，看你能撐多久！玩完還能領泥研製所官網會員 95 折優惠碼。">
+<meta property="og:image" content="https://niyan-game.pages.dev/assets/og-xmas.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.png">
 <style>
   :root{
@@ -87,6 +91,14 @@
   .rec-note{margin:0 0 12px; font-size:12px; font-weight:700; color:var(--brown);}
   .rec-note:empty{display:none;}
   .go2{display:flex; gap:8px;}
+  .share{margin:0 0 12px;}
+  .share .btn{width:100%; min-width:0; background:linear-gradient(180deg,#E6C068,#C9A24A); color:#3B2F22; letter-spacing:1px; font-size:15px; font-weight:700;}
+  .share-more{display:flex; gap:6px; margin-top:8px;}
+  .share-more[hidden]{display:none;}
+  .share-more a,.share-more button{flex:1; padding:8px 4px; border-radius:999px; border:0; font-size:13px; font-weight:700; color:#fff; text-align:center; text-decoration:none; cursor:pointer;}
+  .sh-line{background:#06C755;}
+  .sh-fb{background:#1877F2;}
+  .sh-copy{background:var(--tea);}
   .go2 .btn{flex:1; min-width:0; padding:10px 8px; font-size:14px; letter-spacing:1px; text-decoration:none; text-align:center;}
   .stat{display:flex; justify-content:center; gap:14px; margin:0 0 12px; font-size:13px; color:var(--grey);}
   .stat b{color:var(--ink);}
@@ -173,6 +185,10 @@
       <div class="stat"><span>送達 <b class="e-ok">0</b></span><span>撐了 <b class="e-time">0</b> 秒</span><span>最高連擊 <b class="e-combo">0</b></span></div>
       <div class="rec"><div><small>目前最高分</small><b class="r-top">—</b></div><div><small>你的最高紀錄</small><b class="r-mine">—</b></div></div>
       <p class="rec-note n-end"></p>
+      <div class="share">
+        <button type="button" class="btn share-btn">分享成績，邀朋友來挑戰</button>
+        <div class="share-more" hidden><a class="sh-line" target="_blank" rel="noopener">LINE</a><a class="sh-fb" target="_blank" rel="noopener">Facebook</a><button type="button" class="sh-copy">複製連結</button></div>
+      </div>
 
       </div>
       <div class="col">
@@ -565,6 +581,7 @@
     if(first){ best=score; store.set('niyan_xmas_best',best); }
     var rk=RANKS[0]; RANKS.forEach(function(x){ if(score>=x[0]) rk=x; });
     $('.e-score').textContent=score;
+    $('.share-more').hidden=true;
     $('.e-rank').textContent=rk[1];
     $('.e-msg').textContent=rk[2];
     $('.e-ok').textContent=ok; $('.e-time').textContent=Math.floor(elapsed); $('.e-combo').textContent=maxCombo;
@@ -776,7 +793,7 @@
     $$('.r-top').forEach(function(el){ el.textContent=top; });
     $$('.r-mine').forEach(function(el){ el.textContent=best||'—'; });
     var champ=best>0&&topBest!=null&&best>=topBest;
-    $('.n-start').textContent=champ?'你就是目前最高分！':topBest===0?'還沒有人登錄分數，搶第一個！':'';
+    $('.n-start').textContent=VS>best?'朋友拿到 '+VS+' 分，換你來挑戰！':champ?'你就是目前最高分！':topBest===0?'還沒有人登錄分數，搶第一個！':'';
     var note='';
     if(isNew) note=champ?'刷新紀錄，也是目前最高分！':'刷新你的最高紀錄！';
     else if(champ) note='你就是目前最高分！';
@@ -800,6 +817,7 @@
 
   /* ===== 領券：email 存到 D1（/api/claim），回傳優惠碼，同時登錄分數 ===== */
   var SRC=(new URLSearchParams(location.search).get('src')||'').slice(0,60);
+  var VS=Math.max(0,Math.floor(Number(new URLSearchParams(location.search).get('vs'))||0));   /* 朋友分享的分數 */
   var form=$('.c-form'), got=$('.c-got'), err=$('.c-form .err'), submit=$('.c-form .btn');
   $('.shop').href=SHOP;
   $$('.join').forEach(function(a){ a.href=JOIN; });
@@ -837,6 +855,35 @@
       document.body.removeChild(t);
     }
     if(navigator.clipboard) navigator.clipboard.writeText(code).then(done,fallback); else fallback();
+  };
+
+  /* ===== 分享成績 ===== */
+  function shareInfo(){
+    var url=location.origin+'/share?score='+score;
+    return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰'};
+  }
+  function showShareMore(){
+    var si=shareInfo(), more=$('.share-more');
+    $('.sh-line').href='https://line.me/R/share?text='+encodeURIComponent(si.text+'\n'+si.url);
+    $('.sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(si.url);
+    $('.sh-copy').textContent='複製連結';
+    more.hidden=false;
+  }
+  $('.share-btn').onclick=function(){
+    var si=shareInfo();
+    if(navigator.share){
+      navigator.share({title:'聖誕胖胖貓送禮', text:si.text, url:si.url}).catch(function(e){ if(!e||e.name!=='AbortError') showShareMore(); });
+    }else showShareMore();
+  };
+  $('.sh-copy').onclick=function(){
+    var b=this, si=shareInfo(), txt=si.text+'\n'+si.url;
+    function done(){ b.textContent='已複製'; }
+    function fallback(){
+      var t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select();
+      try{ document.execCommand('copy'); done(); }catch(e){}
+      document.body.removeChild(t);
+    }
+    if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done,fallback); else fallback();
   };
 
   /* ===== 音效（WebAudio 合成） ===== */
