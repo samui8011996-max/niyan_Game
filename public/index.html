@@ -340,9 +340,13 @@
     fetch('assets/lucky-'+k+'.svg').then(function(r){ return r.text(); }).then(function(svg){
       LUCKY_COLORS.forEach(function(c){
         var img=new Image();
+        img.onload=function(){   /* 畫成點陣再用，遊戲中不用每格重畫 SVG */
+          var lc=document.createElement('canvas'); lc.width=209*2; lc.height=231*2;
+          lc.getContext('2d').drawImage(img,0,0,lc.width,lc.height);
+          luckyImgs.push(lc);
+        };
         img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace(/<style>[\s\S]*?<\/style>/,
           '<style>.o{fill:'+c.o+'}.b{fill:'+c.b+'}.l{fill:'+c.l+'}.e{fill:'+c.e+'}</style>'));
-        luckyImgs.push(img);
       });
     }).catch(function(){});   /* 載不到就維持顯示「謝謝」 */
   });
@@ -424,11 +428,23 @@
     c.beginPath(); c.ellipse(s*0.17,-s*0.5,s*0.16,s*0.1,0.5,0,Math.PI*2); c.stroke();
     c.restore();
   }
+  /* 雪橇貓 SVG 很複雜，每格直接畫 SVG 會卡（外嵌 iframe 更明顯）：先依目前大小畫成點陣，大小變了才重畫 */
+  var sledCache=null, sledCacheW=0;
+  function sledBmp(w,h){
+    if(!sledImg.complete||!sledImg.naturalWidth) return null;
+    var dpr=Math.min(window.devicePixelRatio||1,2), pw=Math.ceil(w*dpr);
+    if(!sledCache||Math.abs(pw-sledCacheW)>2){
+      var cv2=document.createElement('canvas'); cv2.width=pw; cv2.height=Math.ceil(h*dpr);
+      cv2.getContext('2d').drawImage(sledImg,0,0,cv2.width,cv2.height);
+      sledCache=cv2; sledCacheW=pw;
+    }
+    return sledCache;
+  }
   function drawSleigh(c,x,y,cw,t){
     /* 原點在雪橇中心，滑板底部約在 y+cw*0.53（禮物從這附近掉下去） */
     var w=cw*1.9, h=w*534.48/886.1;
     c.save(); c.translate(x,y); c.rotate(Math.sin(t*2)*0.03);
-    if(sledImg.complete) c.drawImage(sledImg,-w*0.48,cw*0.53-h,w,h);
+    var sb=sledBmp(w,h); if(sb) c.drawImage(sb,-w*0.48,cw*0.53-h,w,h);
     if(c===ctx&&holdGold&&ybImg.complete){   /* 貓咪舉起元寶，一閃一閃 */
       var yw=cw*0.62, yh=yw*125/200, px=-w*0.48+w*0.335, py=cw*0.53-h+h*0.1+Math.sin(clock*6)*cw*0.03;
       var gl=c.createRadialGradient(px,py,0,px,py,yw*1.1);
@@ -747,15 +763,17 @@
   }
 
   var hScore=$('.h-score'), hLife=$('.h-life'), hDone=$('.h-done'), hCombo=$('.combo');
+  var lastHl='';
+  function setTxt(el,v){ v=String(v); if(el.textContent!==v) el.textContent=v; }
   function hud(){
-    hScore.textContent=score;
+    setTxt(hScore,score);
     /* 愛心用 SVG 畫：文字「♥」在很多手機會變成彩色 emoji，扣掉的那顆變不了灰 */
     var hl=''; for(var i=0;i<LIVES;i++) hl+='<svg viewBox="0 0 24 21"'+(i<lives?'':' class="off"')+'><path d="M12 21l-1.7-1.6C4.2 13.9 0 10.1 0 5.9 0 2.6 2.6 0 5.9 0c1.9 0 3.7.9 5 2.3l1.1 1.2 1.1-1.2C14.4.9 16.2 0 18.1 0 21.4 0 24 2.6 24 5.9c0 4.2-4.2 8-10.3 13.5z"/></svg>';
-    if(hLife.innerHTML!==hl) hLife.innerHTML=hl;
-    hDone.textContent='送達 '+ok;
+    if(lastHl!==hl){ hLife.innerHTML=hl; lastHl=hl; }   /* 記住上次的字串：瀏覽器讀回的 innerHTML 不一定一模一樣，會變成每格重畫 */
+    setTxt(hDone,'送達 '+ok);
     var mult=combo>=10?3:combo>=5?2:1;
-    hCombo.classList.toggle('on',combo>=3&&state==='play');
-    if(combo>=3) hCombo.textContent=combo+' 連擊'+(mult>1?'　分數 x'+mult:'');
+    var con=combo>=3&&state==='play'; if(hCombo.classList.contains('on')!==con) hCombo.classList.toggle('on',con);
+    if(combo>=3) setTxt(hCombo,combo+' 連擊'+(mult>1?'　分數 x'+mult:''));
   }
 
   var last=0;

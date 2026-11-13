@@ -1,16 +1,17 @@
 <!-- 聖誕胖胖貓送禮｜官網遊戲頁（電子報風格）：整段貼到 SHOPLINE 該頁的「自訂 HTML」區塊。
      【】裡的獎品、日期要換成正式內容；圖片和遊戲都放在 niyan-game.pages.dev，不用另外上傳。 -->
 <style>
-  .nyp{width:100vw; position:relative; left:50%; margin-left:-50vw; background:#B32F2D; color:#5A4632; font-family:inherit; overflow-x:clip;}
+  .nyp{width:100vw; position:relative; left:50%; margin-left:-50vw; background:#B32F2D; color:#5A4632; font-family:inherit; overflow:hidden; overflow:clip;}
   .nyp *{box-sizing:border-box;}
   .nyp img{display:block; max-width:100%; height:auto; border:0;}
   .nyp-in{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:40px 20px 48px;}
-  /* 紅色背景飄雪：兩層雪花圖慢慢往下捲（純 CSS，不用程式）；小雪快、大雪花慢 */
-  .nyp::before,.nyp::after{content:""; position:absolute; inset:0; pointer-events:none; background-repeat:repeat;}
-  .nyp::before{background-image:url(https://niyan-game.pages.dev/assets/page/snow1.svg); background-size:400px 400px; animation:nyp-snow1 14s linear infinite;}
-  .nyp::after{background-image:url(https://niyan-game.pages.dev/assets/page/snow2.svg); background-size:600px 600px; animation:nyp-snow2 36s linear infinite;}
-  @keyframes nyp-snow1{from{background-position:0 0;}to{background-position:400px 800px;}}
-  @keyframes nyp-snow2{from{background-position:0 0;}to{background-position:-600px 1200px;}}
+  /* 紅色背景飄雪：兩層雪花圖慢慢往下捲（純 CSS，不用程式）；小雪快、大雪花慢
+     用 transform 移動整層（交給顯示卡），不要動 background-position：那樣每格都要重畫整頁背景，會拖慢裡面的遊戲 */
+  .nyp::before,.nyp::after{content:""; position:absolute; pointer-events:none; background-repeat:repeat; will-change:transform; z-index:0;}
+  .nyp::before{top:-800px; left:-400px; right:0; bottom:0; background-image:url(https://niyan-game.pages.dev/assets/page/snow1.svg); background-size:400px 400px; animation:nyp-snow1 14s linear infinite;}
+  .nyp::after{top:-1200px; left:0; right:-600px; bottom:0; background-image:url(https://niyan-game.pages.dev/assets/page/snow2.svg); background-size:600px 600px; animation:nyp-snow2 36s linear infinite;}
+  @keyframes nyp-snow1{from{transform:translate3d(0,0,0);}to{transform:translate3d(400px,800px,0);}}
+  @keyframes nyp-snow2{from{transform:translate3d(0,0,0);}to{transform:translate3d(-600px,1200px,0);}}
   @media (prefers-reduced-motion:reduce){ .nyp::before,.nyp::after{animation:none;} }
   /* 這頁不要 SHOPLINE 的「回到頂部」圓鈕（只影響這一頁） */
   .sl-goto-top,.js-goto-top{display:none!important;}
@@ -63,6 +64,7 @@
 
   /* 手機：全部改成一欄，遊戲直式 */
   @media (max-width:820px){
+    .nyp::before,.nyp::after{animation:none; will-change:auto;}   /* 手機顯示卡弱：背景雪不動，把效能留給遊戲 */
     .nyp-in{padding:20px 12px 28px;}
     .nyp-intro{padding:24px 18px 4px;}
     .nyp-intro p{font-size:15px; text-align:left;}
