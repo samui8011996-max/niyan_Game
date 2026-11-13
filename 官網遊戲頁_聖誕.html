@@ -4,7 +4,14 @@
   .nyp{width:100vw; position:relative; left:50%; margin-left:-50vw; background:#B32F2D; color:#5A4632; font-family:inherit; overflow-x:clip;}
   .nyp *{box-sizing:border-box;}
   .nyp img{display:block; max-width:100%; height:auto; border:0;}
-  .nyp-in{max-width:1080px; margin:0 auto; padding:40px 20px 48px;}
+  .nyp-in{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:40px 20px 48px;}
+  /* 紅色背景飄雪：兩層雪花圖慢慢往下捲（純 CSS，不用程式）；小雪快、大雪花慢 */
+  .nyp::before,.nyp::after{content:""; position:absolute; inset:0; pointer-events:none; background-repeat:repeat;}
+  .nyp::before{background-image:url(https://niyan-game.pages.dev/assets/page/snow1.webp); background-size:400px 400px; animation:nyp-snow1 14s linear infinite;}
+  .nyp::after{background-image:url(https://niyan-game.pages.dev/assets/page/snow2.webp); background-size:600px 600px; animation:nyp-snow2 36s linear infinite;}
+  @keyframes nyp-snow1{from{background-position:0 0;}to{background-position:400px 800px;}}
+  @keyframes nyp-snow2{from{background-position:0 0;}to{background-position:-600px 1200px;}}
+  @media (prefers-reduced-motion:reduce){ .nyp::before,.nyp::after{animation:none;} }
   .nyp-card{background:#EBE9E5; border-radius:20px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,.18);}
 
   /* 上：郵戳、雪橇貓、聖誕帽＋標題介紹 */
