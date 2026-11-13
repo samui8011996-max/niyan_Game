@@ -1,0 +1,134 @@
+<!-- 聖誕胖胖貓送禮｜官網遊戲頁（電子報風格）：整段貼到 SHOPLINE 該頁的「自訂 HTML」區塊。
+     【】裡的獎品、日期要換成正式內容；圖片和遊戲都放在 niyan-game.pages.dev，不用另外上傳。 -->
+<style>
+  .nyp{width:100vw; position:relative; left:50%; margin-left:-50vw; background:#B32F2D; color:#5A4632; font-family:inherit; overflow-x:clip;}
+  .nyp *{box-sizing:border-box;}
+  .nyp img{display:block; max-width:100%; height:auto; border:0;}
+  .nyp-in{max-width:1080px; margin:0 auto; padding:40px 20px 48px;}
+  .nyp-card{background:#EBE9E5; border-radius:20px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,.18);}
+
+  /* 上：主視覺（整張不裁）＋標題介紹，跟電子報一樣由上往下 */
+  .nyp-hero img{width:100%;}
+  .nyp-intro{position:relative; max-width:760px; margin:0 auto; padding:24px 36px 8px; text-align:center;}
+  .nyp-deco{display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
+  .nyp-deco .pm{width:110px;}
+  .nyp-deco .sl{width:230px; margin-top:6px;}
+  .nyp-deco .hat{width:92px;}
+  .nyp-brand{margin:12px 0 0; font-size:14px; letter-spacing:3px; color:#9C8466;}
+  .nyp h2{margin:6px 0 0; font-size:32px; font-weight:700; letter-spacing:3px; color:#B32F2D;}
+  .nyp-sub{margin:6px 0 0; font-size:15px; color:#5A4632;}
+  .nyp-pill{display:inline-block; margin:16px 0 0; padding:11px 26px; border-radius:999px; background:#B32F2D; color:#fff; font-size:17px; font-weight:700; letter-spacing:1px;}
+  .nyp-intro p{margin:18px 0 0; font-size:16px; line-height:1.9;}
+  .nyp-top-score{display:block; width:100%; max-width:460px; height:68px; margin:20px auto 0; border:0;}
+  .nyp-go{display:inline-block; margin:16px 0 0; padding:13px 44px; border-radius:999px; background:#B32F2D; color:#fff!important; font-size:17px; font-weight:700; letter-spacing:2px; text-decoration:none!important; box-shadow:0 4px 0 rgba(0,0,0,.18); transition:transform .15s;}
+  .nyp-go:hover{transform:translateY(-2px);}
+
+  /* 中：遊戲本體 */
+  .nyp-game{padding:30px 28px 10px; scroll-margin-top:20px;}
+  .nyp-game h3,.nyp-info h3{margin:0 0 14px; font-size:20px; font-weight:700; letter-spacing:2px; color:#B32F2D; text-align:center;}
+  .nyp-box{position:relative; width:100%; aspect-ratio:16/9; min-height:520px; max-height:82vh; border-radius:20px; overflow:hidden; background:#34414B; box-shadow:0 10px 26px rgba(52,65,75,.28);}
+  .nyp-box iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block;}
+
+  /* 下：玩法、獎品、活動時間 */
+  .nyp-info{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; padding:26px 28px 6px;}
+  .nyp-info section{padding:20px 22px; border-radius:14px; background:#F5F3EF; font-size:15px; line-height:1.9;}
+  .nyp-info section.prize{border:2px dashed #9C8466;}
+  .nyp-info h3{text-align:left; margin-bottom:8px; font-size:18px;}
+  .nyp-info ol,.nyp-info ul{margin:0; padding:0 0 0 1.3em;}
+  .nyp-info li{margin:0 0 4px;}
+  .nyp-info b{color:#B32F2D;}
+  .nyp-info small{display:block; margin-top:6px; font-size:13px; line-height:1.7; color:#757575;}
+
+  /* 結尾 */
+  .nyp-end{display:flex; align-items:center; gap:16px; padding:22px 32px 26px;}
+  .nyp-end .st{width:120px; flex:none;}
+  .nyp-end p{flex:1; margin:0; font-size:16px; line-height:1.9;}
+  .nyp-end p b{color:#B32F2D;}
+  .nyp-end .paw{width:40px; flex:none; align-self:flex-end;}
+  .nyp-foot{padding:16px 32px; background:#DED9D1; font-size:12px; line-height:1.7; color:#757575;}
+
+  /* 手機：全部改成一欄，遊戲直式 */
+  @media (max-width:820px){
+    .nyp-in{padding:20px 12px 28px;}
+    .nyp-intro{padding:18px 18px 4px;}
+    .nyp-intro p{font-size:15px; text-align:left;}
+    .nyp-deco .pm{width:76px;} .nyp-deco .sl{width:160px;} .nyp-deco .hat{width:62px;}
+    .nyp h2{font-size:26px;}
+    .nyp-pill{font-size:15px; padding:10px 18px;}
+    .nyp-game{padding:22px 12px 6px;}
+    .nyp-box{aspect-ratio:3/4; min-height:540px; max-height:85vh;}
+    .nyp-info{grid-template-columns:1fr; gap:12px; padding:18px 12px 4px;}
+    .nyp-end{padding:18px 16px 20px; gap:12px;}
+    .nyp-end .st{width:96px;}
+    .nyp-end p{font-size:15px;}
+    .nyp-foot{padding:14px 18px;}
+  }
+</style>
+
+<div class="nyp">
+  <div class="nyp-in">
+    <div class="nyp-card">
+
+      <div class="nyp-top">
+        <div class="nyp-hero"><img src="https://niyan-game.pages.dev/assets/page/hero.jpg" alt="Meowy Christmas & Happy Meow Year" width="1200" height="811"></div>
+        <div class="nyp-intro">
+          <div class="nyp-deco">
+            <img class="pm" src="https://niyan-game.pages.dev/assets/page/postmark.webp" alt="">
+            <img class="sl" src="https://niyan-game.pages.dev/assets/page/sleigh.webp" alt="雪橇胖胖貓">
+            <img class="hat" src="https://niyan-game.pages.dev/assets/page/hat.webp" alt="">
+          </div>
+          <div class="nyp-brand">NIYAN CEMENT 泥研製所</div>
+          <h2>聖誕胖胖貓送禮</h2>
+          <div class="nyp-sub">官網小遊戲｜坐上雪橇，把禮物丟進煙囪</div>
+          <div class="nyp-pill">送禮物・衝排行・前三名抱走聖誕大獎</div>
+          <p>聖誕節快到了，泥研製所的胖胖貓們也戴上聖誕帽、換上麋鹿角，準備把禮物送到每一戶人家。</p>
+          <p style="margin-top:6px">送對越多禮物、分數越高，活動結束時排行榜前三名，就能把聖誕大禮抱回家。玩完留下 Email，還能領官網會員 95 折優惠碼。</p>
+          <iframe class="nyp-top-score" src="https://niyan-game.pages.dev/top.html" title="目前最高分" loading="lazy"></iframe>
+          <a class="nyp-go" href="#nyp-game">馬上開始玩</a>
+        </div>
+      </div>
+
+      <div class="nyp-game" id="nyp-game">
+        <h3>聖誕胖胖貓送禮</h3>
+        <div class="nyp-box">
+          <iframe src="https://niyan-game.pages.dev/?src=shopline" title="聖誕胖胖貓送禮" loading="lazy" allow="autoplay; web-share; clipboard-write"></iframe>
+        </div>
+      </div>
+
+      <div class="nyp-info">
+        <section>
+          <h3>怎麼玩</h3>
+          <ol>
+            <li>看煙囪上的泡泡，要<b>紅色</b>還是<b>綠色</b>禮物</li>
+            <li>電腦按滑鼠左鍵丟綠禮物、右鍵丟紅禮物；手機點下方按鈕</li>
+            <li>送錯或漏送扣一顆心，3 顆用完就結束，越送越快</li>
+            <li>胖胖貓偶爾會拿起元寶，丟進煙囪就<b>大發財</b></li>
+          </ol>
+        </section>
+        <section class="prize">
+          <h3>活動獎品</h3>
+          <ul>
+            <li>第 1 名：【獎品內容】</li>
+            <li>第 2 名：【獎品內容】</li>
+            <li>第 3 名：【獎品內容】</li>
+          </ul>
+          <small>參加就送：玩完留下 Email，領官網會員 95 折優惠碼</small>
+        </section>
+        <section>
+          <h3>活動時間</h3>
+          即日起至【2026/12/__】23:59
+          <small>不限遊玩次數，以個人最高分計算。遊戲結束後留下 Email 登錄分數，才會列入排行榜。</small>
+        </section>
+      </div>
+
+      <div class="nyp-end">
+        <img class="st" src="https://niyan-game.pages.dev/assets/page/sticker.webp" alt="Meowy Christmas">
+        <p>祝你聖誕快樂，<br>也祝你登上排行榜！<br><b>泥研製所</b></p>
+        <img class="paw" src="https://niyan-game.pages.dev/assets/page/paw.webp" alt="">
+      </div>
+
+      <div class="nyp-foot">得獎名單將於【公布日期】在官網及粉絲專頁公布，並以 Email 通知得獎者。泥研製所保有活動修改及解釋之權利。</div>
+
+    </div>
+  </div>
+</div>
