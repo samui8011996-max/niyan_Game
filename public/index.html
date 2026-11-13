@@ -93,12 +93,15 @@
   .go2{display:flex; gap:8px;}
   .share{margin:0 0 12px;}
   .share .btn{width:100%; min-width:0; background:linear-gradient(180deg,#E6C068,#C9A24A); color:#3B2F22; letter-spacing:1px; font-size:15px; font-weight:700;}
-  .share-more{display:flex; gap:6px; margin-top:8px;}
-  .share-more[hidden]{display:none;}
-  .share-more a,.share-more button{flex:1; padding:8px 4px; border-radius:999px; border:0; font-size:13px; font-weight:700; color:#fff; text-align:center; text-decoration:none; cursor:pointer;}
-  .sh-line{background:#06C755;}
-  .sh-fb{background:#1877F2;}
-  .sh-copy{background:var(--tea);}
+  .share-box{margin-top:10px; padding:10px; border-radius:16px; background:#F3EEE5;}
+  .share-box[hidden]{display:none;}
+  .share-img{display:block; width:100%; aspect-ratio:1200/630; border-radius:10px; background:#34414B; -webkit-touch-callout:default;}   /* 成績圖可以長按另存 */
+  .share-url{margin:8px 0; padding:6px 10px; border-radius:8px; background:#fff; font-size:12px; color:var(--grey); word-break:break-all; -webkit-user-select:text; user-select:text;}
+  .share-act{display:flex; gap:6px;}
+  .share-act button{flex:1; padding:9px 4px; border:0; border-radius:999px; font-size:13px; font-weight:700; color:#fff; background:var(--red); cursor:pointer;}
+  .share-act .sh-url{flex:0 0 auto; padding:9px 14px; background:var(--tea);}
+  .share-tip{margin:6px 0 0; font-size:12px; line-height:1.6; color:var(--brown);}
+  .share-tip:empty{display:none;}
   .go2 .btn{flex:1; min-width:0; padding:10px 8px; font-size:14px; letter-spacing:1px; text-decoration:none; text-align:center;}
   .stat{display:flex; justify-content:center; gap:14px; margin:0 0 12px; font-size:13px; color:var(--grey);}
   .stat b{color:var(--ink);}
@@ -187,7 +190,12 @@
       <p class="rec-note n-end"></p>
       <div class="share">
         <button type="button" class="btn share-btn">分享成績，邀朋友來挑戰</button>
-        <div class="share-more" hidden><a class="sh-line" target="_blank" rel="noopener">LINE</a><a class="sh-fb" target="_blank" rel="noopener">Facebook</a><button type="button" class="sh-copy">複製連結</button></div>
+        <div class="share-box" hidden>
+          <img class="share-img" alt="我的聖誕胖胖貓成績圖">
+          <div class="share-url"></div>
+          <div class="share-act"><button type="button" class="sh-all">複製圖片和網址</button><button type="button" class="sh-url">只複製網址</button></div>
+          <p class="share-tip"></p>
+        </div>
       </div>
 
       </div>
@@ -581,7 +589,7 @@
     if(first){ best=score; store.set('niyan_xmas_best',best); }
     var rk=RANKS[0]; RANKS.forEach(function(x){ if(score>=x[0]) rk=x; });
     $('.e-score').textContent=score;
-    $('.share-more').hidden=true;
+    $('.share-box').hidden=true;
     $('.e-rank').textContent=rk[1];
     $('.e-msg').textContent=rk[2];
     $('.e-ok').textContent=ok; $('.e-time').textContent=Math.floor(elapsed); $('.e-combo').textContent=maxCombo;
@@ -758,7 +766,7 @@
 
   /* ===== 操作：左鍵綠、右鍵紅；手機用下方按鈕 ===== */
   /* 整頁鎖右鍵、長按選單、拖曳圖片；只有 email 欄位保留，方便貼上 */
-  document.addEventListener('contextmenu',function(e){ if(e.target.tagName!=='INPUT') e.preventDefault(); });
+  document.addEventListener('contextmenu',function(e){ if(e.target.tagName!=='INPUT'&&!e.target.classList.contains('share-img')) e.preventDefault(); });   /* 成績圖讓人另存 */
   document.addEventListener('dragstart',function(e){ e.preventDefault(); });
   document.addEventListener('selectstart',function(e){ if(e.target.tagName!=='INPUT') e.preventDefault(); });
   cv.addEventListener('pointerdown',function(e){
@@ -857,34 +865,72 @@
     if(navigator.clipboard) navigator.clipboard.writeText(code).then(done,fallback); else fallback();
   };
 
-  /* ===== 分享成績 ===== */
+  /* ===== 分享成績：一張成績圖＋網址，按一下複製 ===== */
+  var paperImg=new Image(); paperImg.src='assets/watercolor.jpg';
+  var shareBlob=null, shareUrlObj=null;
   function shareInfo(){
     var url=location.origin+'/share?score='+score;
-    return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰'};
+    return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰\n'+url};
   }
-  function showShareMore(){
-    var si=shareInfo(), more=$('.share-more');
-    $('.sh-line').href='https://line.me/R/share?text='+encodeURIComponent(si.text+'\n'+si.url);
-    $('.sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(si.url);
-    $('.sh-copy').textContent='複製連結';
-    more.hidden=false;
+  /* 成績圖 1200×630：水彩夜空、雪橇貓、分數、網址 */
+  function makeShareImage(cb){
+    var c=document.createElement('canvas'); c.width=1200; c.height=630;
+    var x=c.getContext('2d'), F='"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif';
+    var gr=x.createLinearGradient(0,0,0,630); gr.addColorStop(0,'#2B3640'); gr.addColorStop(1,'#4A5A63');
+    x.fillStyle=gr; x.fillRect(0,0,1200,630);
+    if(skyImgs.length){
+      STARS.forEach(function(st,i){ if(i%2) return; var im=skyImgs[st[2]], k=26*st[3]/0.4/Math.max(im.width,im.height); x.drawImage(im,1200*st[0]-im.width*k/2,470*st[1]-im.height*k/2,im.width*k,im.height*k); });
+      var mg=x.createRadialGradient(1070,110,50,1070,110,130); mg.addColorStop(0,'rgba(248,233,201,.3)'); mg.addColorStop(1,'rgba(248,233,201,0)');
+      x.fillStyle=mg; x.beginPath(); x.arc(1070,110,130,0,Math.PI*2); x.fill();
+      x.drawImage(skyImgs[0],1010,50,120,120);
+    }
+    x.fillStyle='#F3F0EA'; x.fillRect(0,540,1200,90);
+    if(sledImg.complete) x.drawImage(sledImg,560,150,620,620*534.48/886.1);
+    x.textBaseline='alphabetic'; x.textAlign='left';
+    x.fillStyle='#E6CFA4'; x.font='700 30px '+F; x.fillText('聖誕胖胖貓送禮',70,110);
+    x.fillStyle='#FFFDF8'; x.font='700 40px '+F; x.fillText('我拿到',70,185);
+    x.fillStyle='#F6D57A'; x.font='900 128px '+F; x.fillText(String(score),66,310);
+    var sw=x.measureText(String(score)).width;
+    x.fillStyle='#FFFDF8'; x.font='700 44px '+F; x.fillText('分',80+sw,308);
+    x.font='900 62px '+F; x.fillText('換你來挑戰！',70,400);
+    x.fillStyle='#EFE6D6'; x.font='700 26px '+F; x.fillText('越送越快，看你能撐多久',70,450);
+    x.fillStyle='#7F6C50'; x.font='700 26px '+F; x.fillText(location.host+'　泥研製所 NIYAN CEMENT',70,595);
+    if(paperImg.complete&&paperImg.naturalWidth){   /* 疊水彩紙紋，跟遊戲畫面一樣 */
+      x.globalCompositeOperation='soft-light'; x.globalAlpha=0.45;
+      x.drawImage(paperImg,0,0,1200,630);
+      x.globalCompositeOperation='source-over'; x.globalAlpha=1;
+    }
+    c.toBlob(function(bl){ cb(bl); },'image/png');
   }
-  $('.share-btn').onclick=function(){
-    var si=shareInfo();
-    if(navigator.share){
-      navigator.share({title:'聖誕胖胖貓送禮', text:si.text, url:si.url}).catch(function(e){ if(!e||e.name!=='AbortError') showShareMore(); });
-    }else showShareMore();
-  };
-  $('.sh-copy').onclick=function(){
-    var b=this, si=shareInfo(), txt=si.text+'\n'+si.url;
-    function done(){ b.textContent='已複製'; }
+  function shareTip(t){ $('.share-tip').textContent=t; }
+  function copyText(txt,msg){
     function fallback(){
       var t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select();
-      try{ document.execCommand('copy'); done(); }catch(e){}
+      try{ document.execCommand('copy'); shareTip(msg); }catch(e){ shareTip('複製失敗，請手動選取上面的網址'); }
       document.body.removeChild(t);
     }
-    if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done,fallback); else fallback();
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function(){ shareTip(msg); },fallback); else fallback();
+  }
+  $('.share-btn').onclick=function(){
+    var box=$('.share-box'), si=shareInfo();
+    box.hidden=false; shareTip('');
+    $('.share-url').textContent=si.url;
+    shareBlob=null;
+    makeShareImage(function(bl){
+      shareBlob=bl;
+      if(shareUrlObj) URL.revokeObjectURL(shareUrlObj);
+      shareUrlObj=URL.createObjectURL(bl); $('.share-img').src=shareUrlObj;
+    });
   };
+  $('.sh-all').onclick=function(){
+    var txt=shareInfo().text;
+    if(shareBlob&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      navigator.clipboard.write([new ClipboardItem({'image/png':shareBlob,'text/plain':new Blob([txt],{type:'text/plain'})})])
+        .then(function(){ shareTip('已複製圖片和網址，到 LINE 或 FB 貼上就能分享（只貼出圖片的話，再按「只複製網址」）'); },
+              function(){ copyText(txt,'已複製網址；圖片請長按或按右鍵另存'); });
+    }else copyText(txt,'已複製網址；圖片請長按或按右鍵另存');
+  };
+  $('.sh-url').onclick=function(){ copyText(shareInfo().text,'已複製網址，貼給朋友就好'); };
 
   /* ===== 音效（WebAudio 合成） ===== */
   var AC=null, muted=store.get('niyan_catch_mute')===true, muteBtn=$('.mute');
