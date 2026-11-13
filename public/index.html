@@ -221,6 +221,7 @@
   </div>
 </div>
 
+<script src="assets/qrcode.min.js"></script>
 <script>
 (function(){
   /* ===== 可調整的設定 ===== */
@@ -872,20 +873,46 @@
     var url=location.origin+'/share?score='+score;
     return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰\n'+url};
   }
-  /* 成績圖 1200×630：水彩夜空、雪橇貓、分數、網址 */
+  /* 成績圖 1200×630：水彩夜空、雪橇貓往上飛（拖星光、掉禮物）、郵戳、雪地貓掌、分數、網址 */
+  var stampImg=new Image(); stampImg.src='assets/postmark.webp';
+  var pawImg=new Image(); pawImg.src='assets/paw.webp';
   function makeShareImage(cb){
     var c=document.createElement('canvas'); c.width=1200; c.height=630;
     var x=c.getContext('2d'), F='"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif';
+    var ok=function(im){ return im.complete&&im.naturalWidth; };
     var gr=x.createLinearGradient(0,0,0,630); gr.addColorStop(0,'#2B3640'); gr.addColorStop(1,'#4A5A63');
     x.fillStyle=gr; x.fillRect(0,0,1200,630);
+    /* 星星、月亮 */
     if(skyImgs.length){
       STARS.forEach(function(st,i){ if(i%2) return; var im=skyImgs[st[2]], k=26*st[3]/0.4/Math.max(im.width,im.height); x.drawImage(im,1200*st[0]-im.width*k/2,470*st[1]-im.height*k/2,im.width*k,im.height*k); });
-      var mg=x.createRadialGradient(1070,110,50,1070,110,130); mg.addColorStop(0,'rgba(248,233,201,.3)'); mg.addColorStop(1,'rgba(248,233,201,0)');
-      x.fillStyle=mg; x.beginPath(); x.arc(1070,110,130,0,Math.PI*2); x.fill();
-      x.drawImage(skyImgs[0],1010,50,120,120);
+      var mg=x.createRadialGradient(610,90,40,610,90,110); mg.addColorStop(0,'rgba(248,233,201,.3)'); mg.addColorStop(1,'rgba(248,233,201,0)');
+      x.fillStyle=mg; x.beginPath(); x.arc(610,90,110,0,Math.PI*2); x.fill();
+      x.drawImage(skyImgs[0],565,45,90,90);
     }
-    x.fillStyle='#F3F0EA'; x.fillRect(0,540,1200,90);
-    if(sledImg.complete) x.drawImage(sledImg,560,150,620,620*534.48/886.1);
+    /* 郵戳：右上角斜斜蓋上去 */
+    if(ok(stampImg)){ x.save(); x.translate(1095,95); x.rotate(0.18); x.globalAlpha=0.85; x.drawImage(stampImg,-90,-69,180,138); x.restore(); }
+    /* 雪地 + 一排貓掌腳印 */
+    x.fillStyle='#F3F0EA'; x.beginPath(); x.moveTo(0,560); x.quadraticCurveTo(600,528,1200,556); x.lineTo(1200,630); x.lineTo(0,630); x.fill();
+    if(ok(pawImg)) for(var i=0;i<6;i++){ x.save(); x.translate(470+i*78,598-(i%2)*14); x.rotate(1.35); x.globalAlpha=0.5; x.drawImage(pawImg,-14,-12,28,24); x.restore(); }
+    /* 星光軌跡：從左下彎上來接到雪橇尾巴 */
+    var sx=905, sy=285, ang=-0.2;   /* 雪橇中心、往上翹的角度 */
+    var p0=[500,520], p1=[640,470], p2=[700,345];
+    function bez(t,i){ return (1-t)*(1-t)*p0[i]+2*(1-t)*t*p1[i]+t*t*p2[i]; }
+    for(var k=0;k<=34;k++){
+      var t=k/34, px=bez(t,0), py=bez(t,1), r=1.5+t*5;
+      x.globalAlpha=0.25+0.7*t; x.fillStyle=k%3?'#F6D57A':'#FFF4D6';
+      x.beginPath(); x.arc(px+Math.sin(k*1.7)*6,py+Math.cos(k*1.3)*6,r,0,Math.PI*2); x.fill();
+    }
+    x.globalAlpha=1;
+    function sparkle(px,py,r){ x.fillStyle='#FFF4D6'; x.beginPath(); x.moveTo(px,py-r); x.quadraticCurveTo(px,py,px+r,py); x.quadraticCurveTo(px,py,px,py+r); x.quadraticCurveTo(px,py,px-r,py); x.quadraticCurveTo(px,py,px,py-r); x.fill(); }
+    sparkle(560,470,14); sparkle(655,395,18); sparkle(612,505,9); sparkle(720,300,11);
+    /* 掉下去的禮物 */
+    drawGift(x,700,445,40,COL.r,-0.5); drawGift(x,775,500,32,COL.g,0.4); drawGift(x,640,560,26,COL.g,0.9);
+    /* 雪橇貓：往上翹著飛，旁邊幾條速度線 */
+    x.strokeStyle='rgba(255,253,248,.55)'; x.lineWidth=5; x.lineCap='round';
+    [[640,250,560,272],[650,300,585,318],[630,345,575,360]].forEach(function(l){ x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
+    if(sledImg.complete){ var sw2=500, sh2=sw2*534.48/886.1; x.save(); x.translate(sx,sy); x.rotate(ang); x.drawImage(sledImg,-sw2*0.5,-sh2*0.55,sw2,sh2); x.restore(); }
+    /* 文字 */
     x.textBaseline='alphabetic'; x.textAlign='left';
     x.fillStyle='#E6CFA4'; x.font='700 30px '+F; x.fillText('聖誕胖胖貓送禮',70,110);
     x.fillStyle='#FFFDF8'; x.font='700 40px '+F; x.fillText('我拿到',70,185);
@@ -894,8 +921,18 @@
     x.fillStyle='#FFFDF8'; x.font='700 44px '+F; x.fillText('分',80+sw,308);
     x.font='900 62px '+F; x.fillText('換你來挑戰！',70,400);
     x.fillStyle='#EFE6D6'; x.font='700 26px '+F; x.fillText('越送越快，看你能撐多久',70,450);
-    x.fillStyle='#7F6C50'; x.font='700 26px '+F; x.fillText(location.host+'　泥研製所 NIYAN CEMENT',70,595);
-    if(paperImg.complete&&paperImg.naturalWidth){   /* 疊水彩紙紋，跟遊戲畫面一樣 */
+    /* 右下角 QR code：掃了直接進挑戰頁 */
+    if(window.qrcode){
+      var qr=qrcode(0,'M'); qr.addData(shareInfo().url); qr.make();
+      var n=qr.getModuleCount(), qs=132, cell=qs/n, qx=1036, qy=432;
+      x.fillStyle='#FFFDF8'; x.beginPath();
+      if(x.roundRect) x.roundRect(qx-12,qy-12,qs+24,qs+50,14); else x.rect(qx-12,qy-12,qs+24,qs+50);
+      x.fill();
+      x.fillStyle='#3B2F22';
+      for(var r=0;r<n;r++) for(var cc=0;cc<n;cc++) if(qr.isDark(r,cc)) x.fillRect(qx+cc*cell,qy+r*cell,Math.ceil(cell),Math.ceil(cell));
+      x.fillStyle='#B3302E'; x.font='700 20px '+F; x.textAlign='center'; x.fillText('掃我來挑戰',qx+qs/2,qy+qs+28); x.textAlign='left';
+    }
+    if(ok(paperImg)){   /* 疊水彩紙紋，跟遊戲畫面一樣 */
       x.globalCompositeOperation='soft-light'; x.globalAlpha=0.45;
       x.drawImage(paperImg,0,0,1200,630);
       x.globalCompositeOperation='source-over'; x.globalAlpha=1;
