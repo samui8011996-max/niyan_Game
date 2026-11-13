@@ -240,6 +240,7 @@
   ];
   var SHOP='https://www.niyan-cement.com/';
   var JOIN=SHOP+'users/sign_in';   /* 加入會員／登入 */
+  var PLAY_URL=SHOP+'pages/new-page-5';   /* 分享出去的網址、成績圖的 QR code：官網放遊戲的那一頁 */
   var HOW='請先加入官網會員並登入，結帳時在「優惠代碼」欄位輸入就能享 95 折。';
 
   var $=function(s){ return document.querySelector(s); };
@@ -870,7 +871,7 @@
   var paperImg=new Image(); paperImg.src='assets/watercolor.jpg';
   var shareBlob=null, shareUrlObj=null;
   function shareInfo(){
-    var url=location.origin+'/share?score='+score;
+    var url=PLAY_URL;
     return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰\n'+url};
   }
   /* 成績圖 1200×630：水彩夜空、雪橇貓往上飛（拖星光、掉禮物）、郵戳、雪地貓掌、分數、網址 */
