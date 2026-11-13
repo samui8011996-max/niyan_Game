@@ -7,8 +7,8 @@
   .nyp-in{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:40px 20px 48px;}
   /* 紅色背景飄雪：兩層雪花圖慢慢往下捲（純 CSS，不用程式）；小雪快、大雪花慢 */
   .nyp::before,.nyp::after{content:""; position:absolute; inset:0; pointer-events:none; background-repeat:repeat;}
-  .nyp::before{background-image:url(https://niyan-game.pages.dev/assets/page/snow1.webp); background-size:400px 400px; animation:nyp-snow1 14s linear infinite;}
-  .nyp::after{background-image:url(https://niyan-game.pages.dev/assets/page/snow2.webp); background-size:600px 600px; animation:nyp-snow2 36s linear infinite;}
+  .nyp::before{background-image:url(https://niyan-game.pages.dev/assets/page/snow1.svg); background-size:400px 400px; animation:nyp-snow1 14s linear infinite;}
+  .nyp::after{background-image:url(https://niyan-game.pages.dev/assets/page/snow2.svg); background-size:600px 600px; animation:nyp-snow2 36s linear infinite;}
   @keyframes nyp-snow1{from{background-position:0 0;}to{background-position:400px 800px;}}
   @keyframes nyp-snow2{from{background-position:0 0;}to{background-position:-600px 1200px;}}
   @media (prefers-reduced-motion:reduce){ .nyp::before,.nyp::after{animation:none;} }
@@ -19,9 +19,12 @@
   /* 上：郵戳、雪橇貓、聖誕帽＋標題介紹 */
   .nyp-intro{position:relative; max-width:760px; margin:0 auto; padding:34px 36px 8px; text-align:center;}
   .nyp-deco{display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
-  .nyp-deco .pm{width:110px;}
+  .nyp-deco .stamp{width:100px; margin:22px 0 0 6px; transform:rotate(-8deg);}
   .nyp-deco .sl{width:230px; margin-top:6px;}
   .nyp-deco .hat{width:92px;}
+  /* 標題區：右下角放郵戳（照電子報排法） */
+  .nyp-title{position:relative; padding:0 17%;}
+  .nyp-title .pm{position:absolute; right:0; bottom:-4px; width:92px;}
   .nyp-brand{margin:12px 0 0; font-size:14px; letter-spacing:3px; color:#9C8466;}
   .nyp h2{margin:6px 0 0; font-size:32px; font-weight:700; letter-spacing:3px; color:#B32F2D;}
   .nyp-sub{margin:6px 0 0; font-size:15px; color:#5A4632;}
@@ -63,10 +66,11 @@
     .nyp-in{padding:20px 12px 28px;}
     .nyp-intro{padding:24px 18px 4px;}
     .nyp-intro p{font-size:15px; text-align:left;}
-    .nyp-deco .pm{width:76px;} .nyp-deco .sl{width:160px;} .nyp-deco .hat{width:62px;}
+    .nyp-deco .stamp{width:70px; margin:14px 0 0 4px;} .nyp-title{padding:0;} .nyp-title .pm{width:50px; top:30px; bottom:auto; right:-6px;} .nyp-deco .sl{width:160px;} .nyp-deco .hat{width:62px;}
     .nyp h2{font-size:26px;}
     .nyp-pill{font-size:15px; padding:10px 18px;}
     .nyp-game{padding:22px 12px 6px;}
+    .nyp-game h3{text-align:left; padding-left:4px;}
     .nyp-pop{top:21px; right:12px; padding:4px 10px; font-size:12px; letter-spacing:0;}
     .nyp-box{aspect-ratio:3/4; min-height:540px; max-height:85vh;}
     .nyp-info{grid-template-columns:1fr; gap:12px; padding:18px 12px 4px;}
@@ -84,13 +88,16 @@
       <div class="nyp-top">
         <div class="nyp-intro">
           <div class="nyp-deco">
-            <img class="pm" src="https://niyan-game.pages.dev/assets/page/postmark.webp" alt="">
-            <img class="sl" src="https://niyan-game.pages.dev/assets/page/sleigh.webp" alt="雪橇胖胖貓">
-            <img class="hat" src="https://niyan-game.pages.dev/assets/page/hat.webp" alt="">
+            <img class="stamp" src="https://niyan-game.pages.dev/assets/page/stamp.svg" alt="NIYAN CEMENT 泥研製所">
+            <img class="sl" src="https://niyan-game.pages.dev/assets/sleigh.svg" alt="雪橇胖胖貓">
+            <img class="hat" src="https://niyan-game.pages.dev/assets/page/hat.svg" alt="">
           </div>
-          <div class="nyp-brand">NIYAN CEMENT 泥研製所</div>
-          <h2>聖誕胖胖貓送禮</h2>
-          <div class="nyp-sub">官網小遊戲｜坐上雪橇，把禮物丟進煙囪</div>
+          <div class="nyp-title">
+            <div class="nyp-brand">NIYAN CEMENT 泥研製所</div>
+            <h2>聖誕胖胖貓送禮</h2>
+            <div class="nyp-sub">官網小遊戲｜坐上雪橇，把禮物丟進煙囪</div>
+            <img class="pm" src="https://niyan-game.pages.dev/assets/page/postmark.svg" alt="">
+          </div>
           <div class="nyp-pill">送禮物・衝排行・前三名抱走聖誕大獎</div>
           <p>聖誕節快到了，泥研製所的胖胖貓們也戴上聖誕帽、換上麋鹿角，準備把禮物送到每一戶人家。</p>
           <p style="margin-top:6px">送對越多禮物、分數越高，活動結束時排行榜前三名，就能把聖誕大禮抱回家。玩完留下 Email，還能領官網會員 95 折優惠碼。</p>
@@ -134,9 +141,9 @@
       </div>
 
       <div class="nyp-end">
-        <img class="st" src="https://niyan-game.pages.dev/assets/page/sticker.webp" alt="Meowy Christmas">
+        <img class="st" src="https://niyan-game.pages.dev/assets/page/sticker.svg" alt="Meowy Christmas">
         <p>祝你聖誕快樂，<br>也祝你登上排行榜！<br><b>泥研製所</b></p>
-        <img class="paw" src="https://niyan-game.pages.dev/assets/page/paw.webp" alt="">
+        <img class="paw" src="https://niyan-game.pages.dev/assets/page/paw.svg" alt="">
       </div>
 
       <div class="nyp-foot">得獎名單將於【公布日期】在官網及粉絲專頁公布，並以 Email 通知得獎者。泥研製所保有活動修改及解釋之權利。</div>
