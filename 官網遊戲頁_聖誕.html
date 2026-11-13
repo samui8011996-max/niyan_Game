@@ -23,7 +23,7 @@
   .nyp-go:hover{transform:translateY(-2px);}
 
   /* 中：遊戲本體 */
-  .nyp-game{padding:30px 28px 10px; scroll-margin-top:20px;}
+  .nyp-game{padding:30px 28px 10px; scroll-margin-top:90px;}   /* 沒有程式時跳到這裡，留官網固定頁首的高度 */
   .nyp-game h3,.nyp-info h3{margin:0 0 14px; font-size:20px; font-weight:700; letter-spacing:2px; color:#B32F2D; text-align:center;}
   .nyp-box{position:relative; width:100%; aspect-ratio:16/9; min-height:520px; max-height:82vh; border-radius:20px; overflow:hidden; background:#34414B; box-shadow:0 10px 26px rgba(52,65,75,.28);}
   .nyp-box iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block;}
@@ -82,13 +82,13 @@
           <p>聖誕節快到了，泥研製所的胖胖貓們也戴上聖誕帽、換上麋鹿角，準備把禮物送到每一戶人家。</p>
           <p style="margin-top:6px">送對越多禮物、分數越高，活動結束時排行榜前三名，就能把聖誕大禮抱回家。玩完留下 Email，還能領官網會員 95 折優惠碼。</p>
           <iframe class="nyp-top-score" src="https://niyan-game.pages.dev/top.html" title="目前最高分" loading="lazy"></iframe>
-          <a class="nyp-go" href="#nyp-game">馬上開始玩</a>
+          <a class="nyp-go" href="/pages/new-page-5#nyp-game" onclick="var g=document.getElementById('nyp-box');if(g){g.scrollIntoView({behavior:'smooth',block:'center'});return false;}">馬上開始玩</a>
         </div>
       </div>
 
       <div class="nyp-game" id="nyp-game">
         <h3>聖誕胖胖貓送禮</h3>
-        <div class="nyp-box">
+        <div class="nyp-box" id="nyp-box">
           <iframe src="https://niyan-game.pages.dev/?src=shopline" title="聖誕胖胖貓送禮" loading="lazy" allow="autoplay; web-share; clipboard-write"></iframe>
         </div>
       </div>
