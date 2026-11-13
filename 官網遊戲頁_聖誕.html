@@ -12,6 +12,8 @@
   @keyframes nyp-snow1{from{background-position:0 0;}to{background-position:400px 800px;}}
   @keyframes nyp-snow2{from{background-position:0 0;}to{background-position:-600px 1200px;}}
   @media (prefers-reduced-motion:reduce){ .nyp::before,.nyp::after{animation:none;} }
+  /* 這頁不要 SHOPLINE 的「回到頂部」圓鈕（只影響這一頁） */
+  .sl-goto-top,.js-goto-top{display:none!important;}
   .nyp-card{background:#EBE9E5; border-radius:20px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,.18);}
 
   /* 上：郵戳、雪橇貓、聖誕帽＋標題介紹 */
