@@ -44,6 +44,8 @@
   @keyframes hurt{0%,100%{transform:none;}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
   .sp{flex:1;}
   .mute{pointer-events:auto; cursor:pointer; color:var(--grey); font-weight:400; font-size:12px;}
+  /* 手機窄螢幕：多了音樂鈕，HUD 縮緊一點才放得下 */
+  @media (max-width:430px){ .hud{gap:5px; padding:10px 8px;} .hud .pill{padding:3px 9px; font-size:13px;} .hud .mute{padding:3px 7px; font-size:11px;} .hud>*{flex-shrink:0;} .hud .sp{flex-shrink:1; min-width:0;} .h-life{gap:2px;} }
   .combo{position:absolute; top:50px; left:0; right:0; text-align:center; font-weight:700; font-size:15px; color:#F3E4BF; text-shadow:0 1px 3px rgba(0,0,0,.4); opacity:0; transition:opacity .2s; pointer-events:none;}
   .combo.on{opacity:1;}
 
@@ -150,7 +152,8 @@
     <span class="pill h-life"></span>
     <span class="sp"></span>
     <span class="pill h-done">送達 0</span>
-    <button type="button" class="pill mute"></button>
+    <button type="button" class="pill mute music"></button>
+    <button type="button" class="pill mute sfx"></button>
   </div>
   <div class="combo"></div>
 
@@ -537,7 +540,7 @@
   function buzz(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }   /* iPhone 不支援，會直接略過 */
 
   function start(){
-    audio();
+    audio(); music(true);
     score=0; lives=LIVES; holdGold=false; nextGold=rnd(GOLD_EVERY[0],GOLD_EVERY[1]); $('.pad').classList.remove('gold'); elapsed=0; combo=0; maxCombo=0; ok=0; ng=0; cool=0;
     houses=[]; trees=[]; gifts=[]; parts=[]; texts=[]; built=0;
     fillHouses();
@@ -602,7 +605,7 @@
 
   function end(){
     if(state==='over') return;
-    state='over'; holdGold=false; $('.pad').classList.remove('gold');
+    state='over'; holdGold=false; $('.pad').classList.remove('gold'); music(false);
     var first=score>best;
     if(first){ best=score; store.set('niyan_xmas_best',best); }
     var rk=RANKS[0]; RANKS.forEach(function(x){ if(score>=x[0]) rk=x; });
@@ -989,7 +992,7 @@
   $('.sh-url').onclick=function(){ copyText(shareInfo().text,'已複製網址，貼給朋友就好'); };
 
   /* ===== 音效（WebAudio 合成） ===== */
-  var AC=null, muted=store.get('niyan_catch_mute')===true, muteBtn=$('.mute');
+  var AC=null, muted=store.get('niyan_catch_mute')===true, muteBtn=$('.mute.sfx');
   function setMuteLabel(){ muteBtn.textContent=muted?'音效 關':'音效 開'; }
   setMuteLabel();
   muteBtn.onclick=function(){ muted=!muted; store.set('niyan_catch_mute',muted); setMuteLabel(); audio(); };
@@ -997,6 +1000,20 @@
     if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
     if(AC&&AC.state==='suspended') AC.resume();
   }
+  /* ===== 背景音樂（貓咪聖誕歌）：開始玩時從頭播、循環；結束或切走分頁就停；開關跟音效分開記 ===== */
+  var bgm=null, musicOff=store.get('niyan_xmas_music_off')===true, musicBtn=$('.mute.music'), musicWant=false;
+  function setMusicLabel(){ musicBtn.textContent=musicOff?'音樂 關':'音樂 開'; }
+  setMusicLabel();
+  function musicSync(){
+    var on=musicWant && !musicOff && !document.hidden;
+    if(on){
+      if(!bgm){ bgm=new Audio('assets/bgm-xmas.mp3'); bgm.loop=true; bgm.volume=0.35; }
+      var p=bgm.play(); if(p&&p.catch) p.catch(function(){});
+    }else if(bgm) bgm.pause();
+  }
+  function music(play){ musicWant=play; if(play&&bgm) bgm.currentTime=0; musicSync(); }
+  musicBtn.onclick=function(){ musicOff=!musicOff; store.set('niyan_xmas_music_off',musicOff); setMusicLabel(); musicSync(); };
+  document.addEventListener('visibilitychange',musicSync);
   function tone(f,d,type,vol,to,delay){
     if(muted||!AC) return;
     var t=AC.currentTime+(delay||0), o=AC.createOscillator(), g=AC.createGain();
