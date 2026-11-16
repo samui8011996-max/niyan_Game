@@ -896,7 +896,7 @@
 
   /* ===== 分享成績：一張成績圖＋網址，按一下複製 ===== */
   var paperImg=new Image(); paperImg.src='assets/watercolor.jpg';
-  var shareBlob=null, shareUrlObj=null;
+  var shareBlob=null;
   function shareInfo(){
     var url=PLAY_URL;
     return {url:url, text:'我在「聖誕胖胖貓送禮」拿到 '+score+' 分！你能超過我嗎？換你來挑戰\n'+url};
@@ -906,7 +906,8 @@
   var pawImg=new Image(); pawImg.src='assets/paw.webp';
   function makeShareImage(cb){
     var c=document.createElement('canvas'); c.width=1200; c.height=630;
-    var x=c.getContext('2d'), F='"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif';
+    var x=c.getContext('2d'); if(!x) throw new Error('canvas');
+    var F='"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif';
     var ok=function(im){ return im.complete&&im.naturalWidth; };
     var gr=x.createLinearGradient(0,0,0,630); gr.addColorStop(0,'#2B3640'); gr.addColorStop(1,'#4A5A63');
     x.fillStyle=gr; x.fillRect(0,0,1200,630);
@@ -965,7 +966,10 @@
       x.drawImage(paperImg,0,0,1200,630);
       x.globalCompositeOperation='source-over'; x.globalAlpha=1;
     }
-    c.toBlob(function(bl){ cb(bl); },'image/png');
+    /* 畫面上的圖用 data 網址（iPhone 在官網 iframe 裡 blob 網址可能顯示不出來）；複製／分享用的檔案另外轉 */
+    var url=c.toDataURL('image/png');
+    function fromData(){ var bin=atob(url.split(',')[1]), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return new Blob([a],{type:'image/png'}); }
+    if(c.toBlob) c.toBlob(function(bl){ cb(url, bl||fromData()); },'image/png'); else cb(url, fromData());
   }
   function shareTip(t){ $('.share-tip').textContent=t; }
   function copyText(txt,msg){
@@ -981,14 +985,25 @@
     box.hidden=false; shareTip('');
     $('.share-url').textContent=si.url;
     shareBlob=null;
-    makeShareImage(function(bl){
-      shareBlob=bl;
-      if(shareUrlObj) URL.revokeObjectURL(shareUrlObj);
-      shareUrlObj=URL.createObjectURL(bl); $('.share-img').src=shareUrlObj;
-    });
+    try{
+      makeShareImage(function(url,bl){ shareBlob=bl; $('.share-img').src=url; });
+    }catch(e){ shareTip('成績圖產生失敗（'+(e&&e.message||e)+'），還是可以按「只複製網址」分享'); }
   };
+  /* 手機（能分享檔案的瀏覽器）：直接叫出系統分享選單，選 LINE、IG 等；電腦：複製到剪貼簿 */
+  var canShareFile=false;
+  try{ canShareFile=!!(navigator.share&&navigator.canShare&&window.File&&navigator.canShare({files:[new File([''],'t.png',{type:'image/png'})]})); }catch(e){}
+  if(canShareFile && (window.matchMedia&&matchMedia('(pointer:coarse)').matches)) $('.sh-all').textContent='分享圖片和網址';
+  else canShareFile=false;
   $('.sh-all').onclick=function(){
     var txt=shareInfo().text;
+    if(canShareFile&&shareBlob){
+      var file=new File([shareBlob],'niyan-xmas-score.png',{type:'image/png'});
+      navigator.share({files:[file], text:txt}).then(function(){ shareTip(''); }, function(e){
+        if(e&&e.name==='AbortError') return;   /* 自己取消就算了 */
+        copyText(txt,'這個瀏覽器不能直接分享圖片，已複製網址；圖片請長按另存');
+      });
+      return;
+    }
     if(shareBlob&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
       navigator.clipboard.write([new ClipboardItem({'image/png':shareBlob,'text/plain':new Blob([txt],{type:'text/plain'})})])
         .then(function(){ shareTip('已複製圖片和網址，到 LINE 或 FB 貼上就能分享（只貼出圖片的話，再按「只複製網址」）'); },
