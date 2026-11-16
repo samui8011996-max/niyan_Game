@@ -43,9 +43,12 @@
   .h-life.hurt{animation:hurt .45s;}
   @keyframes hurt{0%,100%{transform:none;}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
   .sp{flex:1;}
-  .mute{pointer-events:auto; cursor:pointer; color:var(--grey); font-weight:400; font-size:12px;}
+  .mute{pointer-events:auto; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0!important; color:var(--red);}
+  .mute svg{display:block; width:17px; height:17px; fill:currentColor; stroke:currentColor;}
+  .mute .x{display:none; stroke-width:2.4; stroke-linecap:round;}
+  .mute.off{color:#B5ADA2;} .mute.off .x{display:inline;}
   /* 手機窄螢幕：多了音樂鈕，HUD 縮緊一點才放得下 */
-  @media (max-width:430px){ .hud{gap:5px; padding:10px 8px;} .hud .pill{padding:3px 9px; font-size:13px;} .hud .mute{padding:3px 7px; font-size:11px;} .hud>*{flex-shrink:0;} .hud .sp{flex-shrink:1; min-width:0;} .h-life{gap:2px;} }
+  @media (max-width:430px){ .hud{gap:5px; padding:10px 8px;} .hud .pill{padding:3px 9px; font-size:13px;} .hud .mute{width:28px; height:28px;} .hud>*{flex-shrink:0;} .hud .sp{flex-shrink:1; min-width:0;} .h-life{gap:2px;} }
   .combo{position:absolute; top:50px; left:0; right:0; text-align:center; font-weight:700; font-size:15px; color:#F3E4BF; text-shadow:0 1px 3px rgba(0,0,0,.4); opacity:0; transition:opacity .2s; pointer-events:none;}
   .combo.on{opacity:1;}
 
@@ -993,7 +996,12 @@
 
   /* ===== 音效（WebAudio 合成） ===== */
   var AC=null, muted=store.get('niyan_catch_mute')===true, muteBtn=$('.mute.sfx');
-  function setMuteLabel(){ muteBtn.textContent=muted?'音效 關':'音效 開'; }
+  /* 音效、音樂開關都用小圖示（手機官網框很窄，文字會擠爆）；關掉時變灰加斜線 */
+  var ICON_X='<line class="x" x1="3" y1="3" x2="21" y2="21"/>';
+  var ICON_SFX='<svg viewBox="0 0 24 24"><path stroke="none" d="M4 9h4l5-4v14l-5-4H4z"/><path fill="none" stroke-width="2" stroke-linecap="round" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>'+ICON_X+'</svg>';
+  var ICON_MUSIC='<svg viewBox="0 0 24 24"><path stroke="none" d="M9 4.5 20 2v13.2a3 3 0 1 1-2-2.8V6.6l-7 1.6v9.2a3 3 0 1 1-2-2.8z"/>'+ICON_X+'</svg>';
+  muteBtn.innerHTML=ICON_SFX;
+  function setMuteLabel(){ muteBtn.classList.toggle('off',muted); muteBtn.title=muted?'音效：關（點一下打開）':'音效：開（點一下關掉）'; muteBtn.setAttribute('aria-label',muteBtn.title); }
   setMuteLabel();
   muteBtn.onclick=function(){ muted=!muted; store.set('niyan_catch_mute',muted); setMuteLabel(); audio(); };
   function audio(){
@@ -1002,7 +1010,8 @@
   }
   /* ===== 背景音樂（貓咪聖誕歌）：開始玩時從頭播、循環；結束或切走分頁就停；開關跟音效分開記 ===== */
   var bgm=null, musicOff=store.get('niyan_xmas_music_off')===true, musicBtn=$('.mute.music'), musicWant=false;
-  function setMusicLabel(){ musicBtn.textContent=musicOff?'音樂 關':'音樂 開'; }
+  musicBtn.innerHTML=ICON_MUSIC;
+  function setMusicLabel(){ musicBtn.classList.toggle('off',musicOff); musicBtn.title=musicOff?'音樂：關（點一下打開）':'音樂：開（點一下關掉）'; musicBtn.setAttribute('aria-label',musicBtn.title); }
   setMusicLabel();
   function musicSync(){
     var on=musicWant && !musicOff && !document.hidden;
