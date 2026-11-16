@@ -27,6 +27,8 @@
   html,body{margin:0; height:100%; overflow:hidden; background:var(--night); color:var(--ink); font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; letter-spacing:1px; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent;}
   button{font:inherit; letter-spacing:inherit;}
   #stage{position:fixed; inset:0;}
+  /* 手機連點兩下不要放大畫面（iPhone 不理 user-scalable=no，要靠這個）；兩指縮放仍可用 */
+  html,body,*{touch-action:manipulation;}
   #cv{display:block; width:100%; height:100%; touch-action:none;}
   /* 水彩紙紋：灰階水彩圖用柔光疊在最上層，整個畫面變水彩感；不擋點擊 */
   .paper{position:absolute; inset:0; z-index:10; pointer-events:none; background:url(assets/watercolor.jpg) center/cover; mix-blend-mode:soft-light; opacity:.45;}
@@ -802,6 +804,7 @@
   $$('.pad button').forEach(function(b){
     b.addEventListener('contextmenu',function(e){ e.preventDefault(); });
     b.addEventListener('pointerdown',function(e){ e.preventDefault(); drop(b.dataset.c); });
+    b.addEventListener('touchend',function(e){ e.preventDefault(); });   /* 快速連點禮物鈕時，舊版 iPhone 也不會放大 */
   });
   window.addEventListener('keydown',function(e){
     if(/INPUT|TEXTAREA/.test(e.target.tagName)) return;   /* 正在填 email 時不搶按鍵 */
