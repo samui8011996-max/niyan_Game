@@ -363,7 +363,7 @@
   var sleigh={x:0, y:0, t:0};
   var houses=[], trees=[], gifts=[], parts=[], texts=[], snow=[];
   var state='menu', score=0, lives=LIVES, holdGold=false, nextGold=0, elapsed=0, combo=0, maxCombo=0, ok=0, ng=0, cool=0, countdown=0, worldX=0, built=0;
-  var best=store.get('niyan_xmas_best')||0;
+  var best=store.get('niyan_xmas_best_2026')||0;
 
   function resize(){
     var dpr=Math.min(window.devicePixelRatio||1,2);
@@ -612,7 +612,7 @@
     if(state==='over') return;
     state='over'; holdGold=false; $('.pad').classList.remove('gold'); music(false);
     var first=score>best;
-    if(first){ best=score; store.set('niyan_xmas_best',best); }
+    if(first){ best=score; store.set('niyan_xmas_best_2026',best); }
     var rk=RANKS[0]; RANKS.forEach(function(x){ if(score>=x[0]) rk=x; });
     $('.e-score').textContent=score;
     $('.share-box').hidden=true;
