@@ -820,6 +820,7 @@
   var claimed=null;                                /* {code, email}；不記在瀏覽器：每次打開都要先留 Email（同一次再玩不用重填） */
   var myEmail=claimed&&claimed.email||'';
   var topBest=null;                                /* null = 還沒讀到 */
+  var closed=false;                                /* 活動截止（伺服器說了算）：排行榜不再收分數 */
 
   function api(url,body){
     return fetch(url,body?{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}:undefined)
@@ -834,11 +835,12 @@
     var note='';
     if(isNew) note=champ?'刷新紀錄，也是目前最高分！':'刷新你的最高紀錄！';
     else if(champ) note='你就是目前最高分！';
-    if(!myEmail&&best>0) note+=(note?' ':'')+'留下 Email 就能登錄分數';
+    if(!myEmail&&best>0&&!closed) note+=(note?' ':'')+'留下 Email 就能登錄分數';
+    if(closed){ note='活動已於 12/31 23:59 截止，分數不再列入排行榜'; $('.n-start').textContent=note; if(submit&&!submit.disabled) submit.textContent='領取優惠碼'; }
     $('.n-end').textContent=note;
   }
   function loadTop(isNew){
-    api('/api/scores?game=xmas').then(function(d){ topBest=d.best; }).catch(function(){})
+    api('/api/scores?game=xmas').then(function(d){ topBest=d.best; closed=!!d.closed; }).catch(function(){})
       .then(function(){ renderRec(isNew); });
   }
   /* 結算：留過 email 就自動登錄最高分 */
@@ -846,7 +848,7 @@
     renderRec(isNew);
     if(myEmail&&best>0){
       api('/api/scores',{game:'xmas', email:myEmail, score:best})
-        .then(function(d){ topBest=d.best; renderRec(isNew); })
+        .then(function(d){ topBest=d.best; closed=!!d.closed; renderRec(isNew); })
         .catch(function(){ loadTop(isNew); });
     }else loadTop(isNew);
   }
@@ -878,10 +880,11 @@
       .then(function(d){
         claimed={code:d.code, email:email}; myEmail=email;
         renderClaim(!d.isNew);
+        closed=!!d.closed;
         if(d.best!=null){ topBest=d.best; renderRec(false); }
       })
       .catch(function(x){ err.textContent=x.message||'網路好像不太穩，請再試一次'; })
-      .then(function(){ submit.disabled=false; submit.textContent='登錄分數並領取優惠碼'; });
+      .then(function(){ submit.disabled=false; submit.textContent=closed?'領取優惠碼':'登錄分數並領取優惠碼'; });
   });
   $('.copy').onclick=function(){
     var b=this, code=$('.c-code').textContent;

@@ -3,7 +3,7 @@
 // 同一個 email 只存一筆，再送一次只會更新最高分。
 // 有排行榜的遊戲會順便把分數登錄上榜，回傳目前最高分。
 
-import { MAX, EMAIL_RE, saveScore, topScore, savePlay } from '../../lib/scores.js';
+import { MAX, EMAIL_RE, saveScore, topScore, savePlay, closed } from '../../lib/scores.js';
 
 const GAMES = ['catch', 'xmas', 'zodiac', 'guess'];
 
@@ -57,5 +57,5 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew, best });
+  return json({ ok: true, code: env.COUPON_CODE || 'NIYAN95', isNew, best, closed: closed(game) });
 }
