@@ -58,6 +58,18 @@
   .nyp-info ol,.nyp-info ul{margin:0; padding:0 0 0 1.3em;}
   .nyp-info li{margin:0 0 4px;}
   .nyp-info b{color:#B32F2D;}
+  /* 獎品清單：名次圓章＋商品名，會員方案另起一行 */
+  .nyp-info .prize ul{list-style:none; padding:0;}
+  .nyp-info .prize li{display:flex; align-items:flex-start; gap:10px; margin:0 0 10px; line-height:1.55;}
+  .nyp-info .prize li span{display:block;}
+  .nyp-info .prize li b{color:#5A4632; font-size:15px;}
+  .nyp-info .prize li em{display:block; font-style:normal; font-size:13px; color:#B32F2D; font-weight:700;}
+  .nyp-info .rk{flex:none; width:26px; height:26px; margin-top:-1px; border-radius:50%; color:#fff; font-style:normal; font-weight:700; font-size:14px; line-height:26px; text-align:center;}
+  .nyp-info .rk.r1{background:#C9A24A;} .nyp-info .rk.r2{background:#9AA3A8;} .nyp-info .rk.r3{background:#B07A4F;}
+  /* 參加就送：紅底白字一整塊，比獎品清單還醒目 */
+  .nyp-gift{position:relative; margin:14px 0 0; padding:12px 14px 12px; border-radius:12px; background:#B32F2D; color:#fff; font-size:15px; font-weight:700; line-height:1.6; text-align:center;}
+  .nyp-gift span{display:table; margin:0 auto 6px; padding:2px 14px; border-radius:999px; background:#FFFDF8; color:#B32F2D; font-size:14px; letter-spacing:2px;}
+  .nyp-gift br+b,.nyp-gift b{color:#F6D57A; font-size:20px;}
   .nyp-info small{display:block; margin-top:6px; font-size:13px; line-height:1.7; color:#757575;}
 
   /* 結尾 */
@@ -136,11 +148,11 @@
         <section class="prize">
           <h3>活動獎品</h3>
           <ul>
-            <li><b>第 1 名</b>：巨貓一對＋一年 88 折白金會員</li>
-            <li><b>第 2 名</b>：巨貓一隻＋一年 85 折黃金會員</li>
-            <li><b>第 3 名</b>：大貓一對</li>
+            <li><i class="rk r1">1</i><span><b>胖胖招財貓（巨）一對</b><em>＋一年白金會員・全館 88 折</em></span></li>
+            <li><i class="rk r2">2</i><span><b>胖胖招財貓（巨）一隻</b><em>＋一年黃金會員・全館 85 折</em></span></li>
+            <li><i class="rk r3">3</i><span><b>胖胖金運招福貓一對（大）</b></span></li>
           </ul>
-          <small>參加就送：玩完留下 Email，領官網會員 95 折優惠碼</small>
+          <div class="nyp-gift"><span>參加就送</span>玩完留下 Email<br>立即領官網會員 <b>95 折</b>優惠碼</div>
         </section>
         <section>
           <h3>活動時間</h3>
