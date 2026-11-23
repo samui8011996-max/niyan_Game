@@ -4,27 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>目前最高分</title>
-<!-- 官網遊戲頁用 iframe 嵌進去的小框：顯示聖誕遊戲目前最高分，每分鐘更新一次 -->
+<title>排行榜前三名</title>
+<!-- 官網遊戲頁用 iframe 嵌進去的小框：顯示聖誕遊戲排行榜前三名的分數（只有分數，不顯示名字），每分鐘更新一次 -->
 <style>
-  html,body{touch-action:manipulation; margin:0; height:100%; background:transparent; font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif; -webkit-user-select:none; user-select:none;}
-  .box{box-sizing:border-box; height:100%; display:flex; align-items:center; justify-content:center; gap:14px; padding:0 18px; border:2px dashed #9C8466; border-radius:14px; background:#F5F3EF; color:#5A4632;}
-  .box small{font-size:15px; font-weight:700; letter-spacing:2px; color:#9C8466;}
-  .box b{font-size:34px; font-weight:900; letter-spacing:2px; color:#B32F2D; font-variant-numeric:tabular-nums;}
-  .box span{font-size:13px; color:#757575;}
-  @media (max-width:360px){ .box{gap:8px;} .box b{font-size:28px;} .box span{display:none;} }
+  html,body{margin:0; height:100%; background:transparent; font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif; -webkit-user-select:none; user-select:none;}
+  .box{box-sizing:border-box; height:100%; display:flex; align-items:center; justify-content:center; gap:14px; padding:0 14px; border:2px dashed #9C8466; border-radius:14px; background:#F5F3EF; color:#5A4632;}
+  .box small{font-size:14px; font-weight:700; letter-spacing:2px; color:#9C8466; white-space:nowrap;}
+  .rk{display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .rk i{flex:none; width:22px; height:22px; border-radius:50%; color:#fff; font-style:normal; font-weight:700; font-size:12px; line-height:22px; text-align:center;}
+  .r1 i{background:#C9A24A;} .r2 i{background:#9AA3A8;} .r3 i{background:#B07A4F;}
+  .rk b{font-size:24px; font-weight:900; color:#B32F2D; font-variant-numeric:tabular-nums;}
+  .r2 b,.r3 b{font-size:19px;}
+  .empty{font-size:14px; color:#757575;}
+  @media (max-width:420px){ .box{gap:9px; padding:0 8px;} .box small{display:none;} .rk b{font-size:18px;} .r2 b,.r3 b{font-size:15px;} .rk i{width:18px; height:18px; line-height:18px; font-size:11px;} }
 </style>
 </head>
 <body>
-<div class="box"><small>目前最高分</small><b class="n">—</b><span class="t">換你來挑戰</span></div>
+<div class="box"><small>排行榜前三名</small><span class="list"><span class="empty">讀取中…</span></span></div>
 <script>
 (function(){
-  var n=document.querySelector('.n'), t=document.querySelector('.t');
+  var list=document.querySelector('.list');
   function load(){
     fetch('/api/scores?game=xmas',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
       if(!d||!d.ok) return;
-      n.textContent=d.best?d.best:'—';
-      t.textContent=d.best?'換你來挑戰':'還沒有人上榜，搶第一個';
+      var top=d.top||(d.best?[d.best]:[]);
+      if(!top.length){ list.innerHTML='<span class="empty">還沒有人上榜，搶第一個！</span>'; return; }
+      var h='';
+      for(var i=0;i<3;i++) h+='<span class="rk r'+(i+1)+'"><i>'+(i+1)+'</i><b>'+(top[i]!=null?top[i]:'—')+'</b></span>';
+      list.style.display='flex'; list.style.gap='inherit'; list.innerHTML=h;
     }).catch(function(){});
   }
   load(); setInterval(load,60000);

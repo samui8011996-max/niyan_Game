@@ -4,7 +4,7 @@
 // POST /api/scores { game, email, score } → 更新最高分（email 要先在遊戲裡留過，也就是在 game_leads 裡）
 // 分數是前端送來的，只做基本把關；有人亂灌分數，到 D1 的 game_scores 刪掉那筆即可。
 
-import { MAX, EMAIL_RE, saveScore, topScore, fullBoard, savePlay, closed } from '../../lib/scores.js';
+import { MAX, EMAIL_RE, saveScore, topScore, topScores, fullBoard, savePlay, closed } from '../../lib/scores.js';
 
 const json = (data, status = 200, extra = {}) =>
   new Response(JSON.stringify(data), {
@@ -26,7 +26,7 @@ export async function onRequestGet({ request, env }) {
   }
 
   if (!MAX[game]) return json({ ok: false, error: '沒有這個遊戲' }, 400);
-  return json({ ok: true, best: await topScore(env.DB, game), closed: closed(game) });
+  return json({ ok: true, best: await topScore(env.DB, game), top: await topScores(env.DB, game, 3), closed: closed(game) });
 }
 
 export async function onRequestPost({ request, env }) {
