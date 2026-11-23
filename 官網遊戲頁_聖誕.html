@@ -37,6 +37,14 @@
   .nyp-top-score{display:block; width:100%; max-width:460px; height:68px; margin:20px auto 0; border:0;}
   .nyp-go{display:inline-block; margin:16px 0 0; padding:13px 44px; border-radius:999px; background:#B32F2D; color:#fff!important; font-size:17px; font-weight:700; letter-spacing:2px; text-decoration:none!important; box-shadow:0 4px 0 rgba(0,0,0,.18); transition:transform .15s;}
   .nyp-go:hover{transform:translateY(-2px);}
+  /* FB 留言分享抽獎告示 */
+  .nyp-fb{display:flex; align-items:center; gap:14px; max-width:520px; margin:22px auto 0; padding:14px 16px 14px 18px; border-radius:16px; background:#FFFDF8; border:2px solid #1877F2; text-align:left; box-shadow:0 6px 14px rgba(24,119,242,.12);}
+  .nyp-fb .ic{flex:none; width:40px; height:40px; border-radius:50%; background:#1877F2; display:flex; align-items:center; justify-content:center;}
+  .nyp-fb .ic svg{width:22px; height:22px; fill:#fff;}
+  .nyp-fb .tx{flex:1; font-size:14px; line-height:1.6; color:#5A4632;}
+  .nyp-fb .tx b{display:block; font-size:16px; color:#1877F2; letter-spacing:1px;}
+  .nyp-fb a{flex:none; padding:9px 18px; border-radius:999px; background:#1877F2; color:#fff!important; font-size:14px; font-weight:700; letter-spacing:1px; text-decoration:none!important; white-space:nowrap; transition:background .2s;}
+  .nyp-fb a:hover{background:#0F5FCC;}
 
   /* 中：遊戲本體 */
   .nyp-game{position:relative; padding:30px 28px 10px;}
@@ -93,6 +101,7 @@
     .nyp-deco .stamp{width:70px; margin:14px 0 0 4px;} .nyp-title{padding:0;} .nyp-title .pm{width:50px; top:30px; bottom:auto; right:-6px;} .nyp-deco .sl{width:160px;} .nyp-deco .hat{width:62px;}
     .nyp h2{font-size:26px;}
     .nyp-pill{font-size:15px; padding:10px 18px;}
+    .nyp-fb{flex-wrap:wrap; gap:10px;} .nyp-fb .tx{flex:1 1 calc(100% - 54px);} .nyp-fb a{flex:1 1 100%; text-align:center;}
     .nyp-game{padding:22px 12px 6px;}
     .nyp-play{font-size:17px; padding:12px 28px 12px 22px;}
     .nyp-info{grid-template-columns:1fr; gap:12px; padding:18px 12px 4px;}
@@ -126,6 +135,12 @@
           <p style="margin-top:6px">送對越多禮物、分數越高，活動結束時排行榜前三名，就能把聖誕大禮抱回家。玩完留下 Email，還能領官網會員 95 折優惠碼。</p>
           <iframe class="nyp-top-score" src="https://niyan-game.pages.dev/top.html" title="目前最高分" loading="lazy"></iframe>
           <a class="nyp-go" href="https://niyan-game.pages.dev/?src=shopline" target="_blank" rel="noopener">馬上開始玩</a>
+          <!-- FB 留言分享抽獎：把下面 href 的【FB貼文網址】換成活動貼文的網址 -->
+          <div class="nyp-fb">
+            <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 8.5V6.8c0-.8.5-1 1-1h2.4V2.2L14.1 2.2C10.6 2.2 9.8 4.8 9.8 6.5v2H7.6v3.8h2.2V22h4.2v-9.7h3l.4-3.8z"/></svg></span>
+            <span class="tx"><b>FB 留言＋分享，再抽好禮</b>到泥研製所粉絲專頁的活動貼文留言並分享，就有機會抽中聖誕好禮</span>
+            <a href="【FB貼文網址】" target="_blank" rel="noopener">前往貼文</a>
+          </div>
         </div>
       </div>
 
